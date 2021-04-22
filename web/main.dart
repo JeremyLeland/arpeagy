@@ -1,8 +1,15 @@
+import 'dart:html';
+
 import 'game.dart';
 
 class Arpeagy extends Game {
+
+  final image = new ImageElement(src: 'images/cave.png');
+
   Arpeagy() {
-    animate();
+    image.onLoad.listen((event) {
+      animate();
+    });
   }
 
   @override
@@ -11,8 +18,7 @@ class Arpeagy extends Game {
 
   @override
   void draw(ctx) {
-    ctx.fillStyle = 'red';
-    ctx.fillText('Arpeagy', 100, 100);
+    ctx.drawImage(image, 0, 0);
   }
 }
 
