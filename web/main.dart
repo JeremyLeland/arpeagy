@@ -1,19 +1,31 @@
 import 'dart:collection';
+import 'dart:developer';
 import 'dart:html';
 
 import 'game.dart';
+
+Map cavesJSON = {
+  "src": "images/cave.png",
+  "width": 32,
+  "height": 32,
+  "tiles" : {
+    "ground1": {"col": 0, "row": 9},
+    "ground2": {"col": 1, "row": 9},
+    "ground3": {"col": 0, "row": 10},
+    "ground4": {"col": 1, "row": 10}
+  }
+};
 
 class Arpeagy extends Game {
   final tiles = new HashMap<String, CanvasElement>();
 
   Arpeagy() {
-    final tileSrc = new ImageElement(src: 'images/cave.png');
+    final tileSrc = new ImageElement(src: cavesJSON['src']);
     tileSrc.onLoad.listen((event) {
 
-      tiles['GROUND_1'] = extractTile(tileSrc, 0, 9);
-      tiles['GROUND_2'] = extractTile(tileSrc, 1, 9);
-      tiles['GROUND_3'] = extractTile(tileSrc, 0, 10);
-      tiles['GROUND_4'] = extractTile(tileSrc, 1, 10);
+      (cavesJSON['tiles'] as Map).forEach((key, value) {
+        tiles[key] = extractTile(tileSrc, value['col'], value['row']);
+      });
 
       animate();
     });
@@ -32,8 +44,8 @@ class Arpeagy extends Game {
 
   @override
   void draw(ctx) {
-    ctx.drawImage(tiles['GROUND_1']!, 0, 0);
-    ctx.drawImage(tiles['GROUND_2']!, 0, 16);
+    ctx.drawImage(tiles['ground1']!, 0, 0);
+    ctx.drawImage(tiles['ground2']!, 0, 16);
   }
 }
 
