@@ -45,6 +45,11 @@ abstract class Game {
     }
   }
 
+  void drawOnce() {
+    _ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    draw(_ctx);
+  }
+
   void update(num dt);
   void draw(CanvasRenderingContext2D ctx);
 }
