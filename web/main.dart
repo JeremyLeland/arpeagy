@@ -39,13 +39,19 @@ class Arpeagy {
   static const ROWS = 25, COLS = 25;
   final tiles = new HashMap<String, CanvasElement>();
 
-  final CanvasElement canvas = querySelector('#canvas') as CanvasElement;
+  final canvas = querySelector('#canvas') as CanvasElement;
+  final emptyButton = querySelector('#empty') as ButtonElement;
+  final floorButton = querySelector('#floor') as ButtonElement;
 
   final typeMap = new List.generate(ROWS, (_) => List.filled(COLS, Cave.empty, growable: false), growable: false);
+  var clickType = Cave.floor;
 
   Arpeagy() {
     canvas.onMouseDown.listen((e) => mouseAction(e));
     canvas.onMouseMove.listen((e) => mouseAction(e));
+
+    emptyButton.onClick.listen((_) => clickType = Cave.empty);
+    floorButton.onClick.listen((_) => clickType = Cave.floor);
 
     final tileSrc = new ImageElement(src: cavesJSON['src']);
     tileSrc.onLoad.listen((event) {
@@ -63,7 +69,7 @@ class Arpeagy {
       final col = (event.offset.x / TILE_WIDTH).floor();
       final row = (event.offset.y / TILE_HEIGHT).floor();
 
-      typeMap[col][row] = Cave.floor;
+      typeMap[col][row] = clickType;
 
       draw(canvas.context2D);
     }
@@ -114,10 +120,15 @@ class Arpeagy {
   }
 
   void draw(CanvasRenderingContext2D ctx) {
+    ctx.clearRect(0, 0, ctx.canvas.width!, ctx.canvas.height!);
+
     for (var row = 0; row < ROWS; row ++) {
       for (var col = 0; col < COLS; col ++) {
         final tile = getTileAt(typeMap, col, row);
         ctx.drawImage(tile, col * TILE_WIDTH, row * TILE_HEIGHT);
+
+        ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
+        ctx.strokeRect(col * TILE_WIDTH, row * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
       }
     }
   }
