@@ -25,11 +25,13 @@ class Arpeagy {
   static const ROWS = 25, COLS = 25;
   final tiles = new HashMap<String, CanvasElement>();
 
+  final CanvasElement canvas = querySelector('#canvas') as CanvasElement;
+
   final tileMap = new List.generate(ROWS, (_) => List.filled(COLS, 'empty', growable: false), growable: false);
 
   Arpeagy() {
-    final canvas = querySelector('#canvas') as CanvasElement;
-    final ctx = canvas.context2D;
+    canvas.onMouseDown.listen((e) => mouseAction(e));
+    canvas.onMouseMove.listen((e) => mouseAction(e));
 
     final tileSrc = new ImageElement(src: cavesJSON['src']);
     tileSrc.onLoad.listen((event) {
@@ -42,12 +44,22 @@ class Arpeagy {
       for (var row = 0; row < ROWS; row ++) {
         for (var col = 0; col < COLS; col ++) {
           final index = random.nextInt(tiles.keys.length);
-          tileMap[row][col] = tiles.keys.elementAt(index);
+          tileMap[col][row] = tiles.keys.elementAt(index);
         }
       }
 
-      draw(ctx);
+      draw(canvas.context2D);
     });
+  }
+
+  void mouseAction(MouseEvent event) {
+    if (event.buttons == 1) {
+      final col = (event.offset.x / TILE_WIDTH).floor();
+      final row = (event.offset.y / TILE_HEIGHT).floor();
+
+      tileMap[col][row] = 'ground1';
+      draw(canvas.context2D);
+    }
   }
 
   CanvasElement extractTile(ImageElement src, int col, int row) {
@@ -61,7 +73,7 @@ class Arpeagy {
   void draw(CanvasRenderingContext2D ctx) {
     for (var row = 0; row < ROWS; row ++) {
       for (var col = 0; col < COLS; col ++) {
-        final key = tileMap[row][col];
+        final key = tileMap[col][row];
         ctx.drawImage(tiles[key]!, col * TILE_WIDTH, row * TILE_HEIGHT);
       }
     }
