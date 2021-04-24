@@ -21,6 +21,19 @@ Map cavesJSON = {
     "empty_floor_S+W": {"col" : 7, "row": 8},
     "empty_floor_N+E": {"col" : 6, "row": 9},
     "empty_floor_N+W": {"col" : 7, "row": 9},
+    "water": {"col": 2, "row": 3},
+    "water_floor_SE": {"col" : 0, "row": 0},
+    "water_floor_S": {"col" : 1, "row": 0},
+    "water_floor_SW": {"col" : 2, "row": 0},
+    "water_floor_E": {"col" : 0, "row": 1},
+    "water_floor_W": {"col" : 2, "row": 1},
+    "water_floor_NE": {"col" : 0, "row": 2},
+    "water_floor_N": {"col" : 1, "row": 2},
+    "water_floor_NW": {"col" : 2, "row": 2},
+    "water_floor_S+E": {"col" : 0, "row": 3},
+    "water_floor_S+W": {"col" : 1, "row": 3},
+    "water_floor_N+E": {"col" : 0, "row": 4},
+    "water_floor_N+W": {"col" : 1, "row": 4},
     "floor1": {"col": 0, "row": 7},
     "floor2": {"col": 1, "row": 7},
     "floor3": {"col": 0, "row": 8},
@@ -32,7 +45,7 @@ Map cavesJSON = {
   }
 };
 
-enum Cave { empty, floor }
+enum Cave { empty, water, floor }
 
 class Arpeagy {
   static const int TILE_WIDTH = 32, TILE_HEIGHT = 32;
@@ -41,6 +54,7 @@ class Arpeagy {
 
   final canvas = querySelector('#canvas') as CanvasElement;
   final emptyButton = querySelector('#empty') as ButtonElement;
+  final waterButton = querySelector('#water') as ButtonElement;
   final floorButton = querySelector('#floor') as ButtonElement;
 
   final typeMap = new List.generate(ROWS, (_) => List.filled(COLS, Cave.empty, growable: false), growable: false);
@@ -51,6 +65,7 @@ class Arpeagy {
     canvas.onMouseMove.listen((e) => mouseAction(e));
 
     emptyButton.onClick.listen((_) => clickType = Cave.empty);
+    waterButton.onClick.listen((_) => clickType = Cave.water);
     floorButton.onClick.listen((_) => clickType = Cave.floor);
 
     final tileSrc = new ImageElement(src: cavesJSON['src']);
@@ -114,6 +129,22 @@ class Arpeagy {
       if (ne == Cave.floor)   return tiles['empty_floor_NE']!;
       if (sw == Cave.floor)   return tiles['empty_floor_SW']!;
       if (se == Cave.floor)   return tiles['empty_floor_SE']!;
+    }
+    else if (x == Cave.water) {
+      if (n == Cave.floor && w == Cave.floor)   return tiles['water_floor_N+W']!;
+      if (n == Cave.floor && e == Cave.floor)   return tiles['water_floor_N+E']!;
+      if (s == Cave.floor && w == Cave.floor)   return tiles['water_floor_S+W']!;
+      if (s == Cave.floor && e == Cave.floor)   return tiles['water_floor_S+E']!;
+      if (n  == Cave.floor)   return tiles['water_floor_N']!;
+      if (w  == Cave.floor)   return tiles['water_floor_W']!;
+      if (e  == Cave.floor)   return tiles['water_floor_E']!;
+      if (s  == Cave.floor)   return tiles['water_floor_S']!;
+      if (nw == Cave.floor)   return tiles['water_floor_NW']!;
+      if (ne == Cave.floor)   return tiles['water_floor_NE']!;
+      if (sw == Cave.floor)   return tiles['water_floor_SW']!;
+      if (se == Cave.floor)   return tiles['water_floor_SE']!;
+
+      return tiles['water']!;
     }
 
     return tiles['empty']!;
