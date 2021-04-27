@@ -45,14 +45,21 @@ Map cavesJSON = {
         }
       }
     },
-    "floor1": {"col": 0, "row": 7},
-    "floor2": {"col": 1, "row": 7},
-    "floor3": {"col": 0, "row": 8},
-    "floor4": {"col": 1, "row": 8},
-    "floor": {"col": 0, "row": 9},
-    "floor6": {"col": 1, "row": 9},
-    "floor7": {"col": 0, "row": 10},
-    "floor8": {"col": 1, "row": 10}
+    "floor": {
+      "col": 0, "row": 9,
+      "variations": [
+        {"col": 0, "row": 9},
+        {"col": 1, "row": 9},
+        {"col": 0, "row": 10},
+        {"col": 1, "row": 10},
+      ],
+      "doodads": [
+        {"col": 0, "row": 7},
+        {"col": 1, "row": 7},
+        {"col": 0, "row": 8},
+        {"col": 1, "row": 8},
+      ]
+    }
   }
 };
 
@@ -63,10 +70,23 @@ class EdgeInfo {
 
 class TileInfo {
   late CanvasElement image;
+  final List<CanvasElement> variations = [], doodads = [];
   final edges = new Map<String, EdgeInfo>();
 
   TileInfo(Map json, ImageElement src, int width, int height) {
     image = _extractTile(src, json, width, height);
+
+    if (json.containsKey('variations')) {
+      (json['variations'] as List).forEach((varJson) {
+        variations.add(_extractTile(src, varJson, width, height));
+      });
+    }
+
+    if (json.containsKey('doodads')) {
+      (json['doodads'] as List).forEach((varJson) {
+        doodads.add(_extractTile(src, varJson, width, height));
+      });
+    }
 
     if (json.containsKey('edges')) {
       (json['edges'] as Map).forEach((key, value) {
@@ -182,6 +202,19 @@ class Arpeagy {
         if (sw == other)   return edge.southWest ?? self.image;
         if (se == other)   return edge.southEast ?? self.image;
       }
+    }
+
+    if (self.doodads.length > 0) {
+      const DOODAD_CHANCE = 0.1;
+      if (Random().nextDouble() < DOODAD_CHANCE) {
+        var index = Random().nextInt(self.doodads.length);
+        return self.doodads[index];
+      }
+    }
+
+    if (self.variations.length > 0) {
+      var index = Random().nextInt(self.variations.length);
+      return self.variations[index];
     }
     
     return self.image;
