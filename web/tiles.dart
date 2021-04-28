@@ -3,43 +3,43 @@ import 'dart:html';
 import 'dart:math';
 
 class EdgeInfo {
-  CanvasElement? northWest, north, northEast, west, east, southWest, south, southEast;
-  CanvasElement? northAndWest, northAndEast, southAndWest, southAndEast;
+  TileInfo? northWest, north, northEast, west, east, southWest, south, southEast;
+  TileInfo? northAndWest, northAndEast, southAndWest, southAndEast;
 
   EdgeInfo(ImageElement src, Map json, int width, int height) {
-    northWest = _extractTile(src, json['NW'], width, height);
-    north     = _extractTile(src, json['N'],  width, height);
-    northEast = _extractTile(src, json['NE'], width, height);
-    west      = _extractTile(src, json['W'],  width, height);
-    east      = _extractTile(src, json['E'],  width, height);
-    southWest = _extractTile(src, json['SW'], width, height);
-    south     = _extractTile(src, json['S'],  width, height);
-    southEast = _extractTile(src, json['SE'], width, height);
+    northWest = new TileInfo(json['NW'], src, width, height);
+    north     = new TileInfo(json['N'],  src, width, height);
+    northEast = new TileInfo(json['NE'], src, width, height);
+    west      = new TileInfo(json['W'],  src, width, height);
+    east      = new TileInfo(json['E'],  src, width, height);
+    southWest = new TileInfo(json['SW'], src, width, height);
+    south     = new TileInfo(json['S'],  src, width, height);
+    southEast = new TileInfo(json['SE'], src, width, height);
 
-    northAndWest = _extractTile(src, json['N+W'], width, height);
-    northAndEast = _extractTile(src, json['N+E'], width, height);
-    southAndWest = _extractTile(src, json['S+W'], width, height);
-    southAndEast = _extractTile(src, json['S+E'], width, height);
+    northAndWest = new TileInfo(json['N+W'], src, width, height);
+    northAndEast = new TileInfo(json['N+E'], src, width, height);
+    southAndWest = new TileInfo(json['S+W'], src, width, height);
+    southAndEast = new TileInfo(json['S+E'], src, width, height);
   }
 }
 
 class TileInfo {
-  late CanvasElement image;
+  late CanvasElement _image;
   final List<CanvasElement> variations = [], doodads = [];
   final edges = new Map<String, EdgeInfo>();
 
   TileInfo(Map json, ImageElement src, int width, int height) {
-    image = _extractTile(src, json, width, height);
+    _image = _extractTile(json, src, width, height);
 
     if (json.containsKey('variations')) {
       (json['variations'] as List).forEach((varJson) {
-        variations.add(_extractTile(src, varJson, width, height));
+        variations.add(_extractTile(varJson, src, width, height));
       });
     }
 
     if (json.containsKey('doodads')) {
-      (json['doodads'] as List).forEach((varJson) {
-        doodads.add(_extractTile(src, varJson, width, height));
+      (json['doodads'] as List).forEach((doodadJson) {
+        doodads.add(_extractTile(doodadJson, src, width, height));
       });
     }
 
@@ -49,15 +49,32 @@ class TileInfo {
       });
     }
   }
-}
 
-CanvasElement _extractTile(ImageElement src, Map json, int width, int height) {
-  final col = json['col'], row = json['row'];
-  final w = width, h = height;
-  final image = new CanvasElement(width: w, height: h);
-  final ctx = image.context2D;
-  ctx.drawImageScaledFromSource(src, col * w, row * h, w, h, 0, 0, w, h);
-  return image;
+  CanvasElement get image {
+    if (doodads.length > 0) {
+      const DOODAD_CHANCE = 0.1;
+      if (Random().nextDouble() < DOODAD_CHANCE) {
+        var index = Random().nextInt(doodads.length);
+        return doodads[index];
+      }
+    }
+
+    if (variations.length > 0) {
+      var index = Random().nextInt(variations.length);
+      return variations[index];
+    }
+
+    return _image;
+  }
+
+  CanvasElement _extractTile(Map json, ImageElement src, int width, int height) {
+    final col = json['col'], row = json['row'];
+    final w = width, h = height;
+    final image = new CanvasElement(width: w, height: h);
+    final ctx = image.context2D;
+    ctx.drawImageScaledFromSource(src, col * w, row * h, w, h, 0, 0, w, h);
+    return image;
+  }
 }
 
 class TileSet {
@@ -112,32 +129,19 @@ class TileMap {
       if (self.edges.containsKey(other)) {
         final edge = self.edges[other]!;
 
-        if (n == other && w == other)   return edge.northAndWest ?? self.image;
-        if (n == other && e == other)   return edge.northAndEast ?? self.image;
-        if (s == other && w == other)   return edge.southAndWest ?? self.image;
-        if (s == other && e == other)   return edge.southAndEast ?? self.image;
-        if (n  == other)   return edge.north ?? self.image;
-        if (w  == other)   return edge.west ?? self.image;
-        if (e  == other)   return edge.east ?? self.image;
-        if (s  == other)   return edge.south ?? self.image;
-        if (nw == other)   return edge.northWest ?? self.image;
-        if (ne == other)   return edge.northEast ?? self.image;
-        if (sw == other)   return edge.southWest ?? self.image;
-        if (se == other)   return edge.southEast ?? self.image;
+        if (n == other && w == other)   return (edge.northAndWest ?? self).image;
+        if (n == other && e == other)   return (edge.northAndEast ?? self).image;
+        if (s == other && w == other)   return (edge.southAndWest ?? self).image;
+        if (s == other && e == other)   return (edge.southAndEast ?? self).image;
+        if (n  == other)   return (edge.north ?? self).image;
+        if (w  == other)   return (edge.west ?? self).image;
+        if (e  == other)   return (edge.east ?? self).image;
+        if (s  == other)   return (edge.south ?? self).image;
+        if (nw == other)   return (edge.northWest ?? self).image;
+        if (ne == other)   return (edge.northEast ?? self).image;
+        if (sw == other)   return (edge.southWest ?? self).image;
+        if (se == other)   return (edge.southEast ?? self).image;
       }
-    }
-
-    if (self.doodads.length > 0) {
-      const DOODAD_CHANCE = 0.1;
-      if (Random().nextDouble() < DOODAD_CHANCE) {
-        var index = Random().nextInt(self.doodads.length);
-        return self.doodads[index];
-      }
-    }
-
-    if (self.variations.length > 0) {
-      var index = Random().nextInt(self.variations.length);
-      return self.variations[index];
     }
     
     return self.image;
