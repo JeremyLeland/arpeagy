@@ -1,5 +1,6 @@
 import 'dart:html';
-import 'dart:math';
+
+import 'tiles.dart';
 
 
 Map cavesJSON = {
@@ -63,173 +64,60 @@ Map cavesJSON = {
   }
 };
 
-class EdgeInfo {
-  CanvasElement? northWest, north, northEast, west, east, southWest, south, southEast;
-  CanvasElement? northAndWest, northAndEast, southAndWest, southAndEast;
-}
-
-class TileInfo {
-  late CanvasElement image;
-  final List<CanvasElement> variations = [], doodads = [];
-  final edges = new Map<String, EdgeInfo>();
-
-  TileInfo(Map json, ImageElement src, int width, int height) {
-    image = _extractTile(src, json, width, height);
-
-    if (json.containsKey('variations')) {
-      (json['variations'] as List).forEach((varJson) {
-        variations.add(_extractTile(src, varJson, width, height));
-      });
-    }
-
-    if (json.containsKey('doodads')) {
-      (json['doodads'] as List).forEach((varJson) {
-        doodads.add(_extractTile(src, varJson, width, height));
-      });
-    }
-
-    if (json.containsKey('edges')) {
-      (json['edges'] as Map).forEach((key, value) {
-        final edgeInfo = new EdgeInfo();
-        edgeInfo.northWest = _extractTile(src, value['NW'], width, height);
-        edgeInfo.north     = _extractTile(src, value['N'],  width, height);
-        edgeInfo.northEast = _extractTile(src, value['NE'], width, height);
-        edgeInfo.west      = _extractTile(src, value['W'],  width, height);
-        edgeInfo.east      = _extractTile(src, value['E'],  width, height);
-        edgeInfo.southWest = _extractTile(src, value['SW'], width, height);
-        edgeInfo.south     = _extractTile(src, value['S'],  width, height);
-        edgeInfo.southEast = _extractTile(src, value['SE'], width, height);
-
-        edgeInfo.northAndWest = _extractTile(src, value['N+W'], width, height);
-        edgeInfo.northAndEast = _extractTile(src, value['N+E'], width, height);
-        edgeInfo.southAndWest = _extractTile(src, value['S+W'], width, height);
-        edgeInfo.southAndEast = _extractTile(src, value['S+E'], width, height);
-
-        edges[key] = edgeInfo;
-      });
-    }
-  }
-
-  CanvasElement _extractTile(ImageElement src, Map json, int width, int height) {
-    final col = json['col'], row = json['row'];
-    final w = width, h = height;
-    final image = new CanvasElement(width: w, height: h);
-    final ctx = image.context2D;
-    ctx.drawImageScaledFromSource(src, col * w, row * h, w, h, 0, 0, w, h);
-    return image;
-  }
-}
-
-
 class Arpeagy {
-  static const int TILE_WIDTH = 32, TILE_HEIGHT = 32;
-  static const ROWS = 25, COLS = 25;
-  final tiles = new Map<String, TileInfo>();
-
+  static const int MAP_COLS = 25, MAP_ROWS = 25;
   final canvas = querySelector('#canvas') as CanvasElement;
-  final emptyButton = querySelector('#empty') as ButtonElement;
-  final waterButton = querySelector('#water') as ButtonElement;
-  final floorButton = querySelector('#floor') as ButtonElement;
 
-  final typeMap = new List.generate(ROWS, (_) => List.filled(COLS, 'empty', growable: false), growable: false);
-  var clickType = 'floor';
+  late final TileSet caveTiles;
+  late final TileMap tileMap;
+
+  String clickType = 'floor';
+  bool isDrawGrid = false;
 
   Arpeagy() {
     canvas.onMouseDown.listen((e) => mouseAction(e));
     canvas.onMouseMove.listen((e) => mouseAction(e));
 
-    emptyButton.onClick.listen((_) => clickType = 'empty');
-    waterButton.onClick.listen((_) => clickType = 'water');
-    floorButton.onClick.listen((_) => clickType = 'floor');
+    ['empty', 'water', 'floor'].forEach((tileType) {
+      final button = querySelector('#${tileType}') as ButtonElement;
+      button.onClick.listen((_) => clickType = tileType);
+    });
 
-    final tileSrc = new ImageElement(src: cavesJSON['src']);
-    tileSrc.onLoad.listen((event) {
+    final gridCheckbox = querySelector('#grid') as CheckboxInputElement;
+    gridCheckbox.onClick.listen((_) {
+      isDrawGrid = gridCheckbox.checked!;
+      draw(canvas.context2D);
+    });
 
-      (cavesJSON['tiles'] as Map).forEach((key, value) {
-        tiles[key] = new TileInfo(value, tileSrc, TILE_WIDTH, TILE_HEIGHT);
-      });
-
+    caveTiles = new TileSet(cavesJSON);
+    caveTiles.ready.then((_) {
+      tileMap = new TileMap(caveTiles, MAP_ROWS, MAP_COLS);
       draw(canvas.context2D);
     });
   }
 
   void mouseAction(MouseEvent event) {
     if (event.buttons == 1) {
-      final col = (event.offset.x / TILE_WIDTH).floor();
-      final row = (event.offset.y / TILE_HEIGHT).floor();
+      final col = (event.offset.x / caveTiles.width).floor();
+      final row = (event.offset.y / caveTiles.height).floor();
 
-      typeMap[col][row] = clickType;
+      tileMap.typeMap[col][row] = clickType;
 
       draw(canvas.context2D);
     }
   }
 
-  
-
-  CanvasElement getTileAt(List<List<String>> typeMap, int col, int row) {
-    final hasLeft = col > 0, hasRight = col < typeMap.length - 1;
-    final hasUp = row > 0, hasDown = row < typeMap[0].length - 1;
-
-    final nw = hasUp && hasLeft    ? typeMap[col-1][row-1] : '';
-    final n  = hasUp               ? typeMap[col  ][row-1] : '';
-    final ne = hasUp && hasRight   ? typeMap[col+1][row-1] : '';
-    final w  = hasLeft             ? typeMap[col-1][row  ] : '';
-    final x  = typeMap[col][row];
-    final e  = hasRight            ? typeMap[col+1][row  ] : '';
-    final sw = hasDown && hasLeft  ? typeMap[col-1][row+1] : '';
-    final s  = hasDown             ? typeMap[col  ][row+1] : '';
-    final se = hasDown && hasRight ? typeMap[col+1][row+1] : '';
-
-    final self = tiles[x]!;
-    final adj = {nw, n, ne, w, e, sw, s, se}.where((t) => t != '' && t != x);
-
-    if (adj.length == 1) {
-      final other = adj.first;
-
-      if (self.edges.containsKey(other)) {
-        final edge = self.edges[other]!;
-
-        if (n == other && w == other)   return edge.northAndWest ?? self.image;
-        if (n == other && e == other)   return edge.northAndEast ?? self.image;
-        if (s == other && w == other)   return edge.southAndWest ?? self.image;
-        if (s == other && e == other)   return edge.southAndEast ?? self.image;
-        if (n  == other)   return edge.north ?? self.image;
-        if (w  == other)   return edge.west ?? self.image;
-        if (e  == other)   return edge.east ?? self.image;
-        if (s  == other)   return edge.south ?? self.image;
-        if (nw == other)   return edge.northWest ?? self.image;
-        if (ne == other)   return edge.northEast ?? self.image;
-        if (sw == other)   return edge.southWest ?? self.image;
-        if (se == other)   return edge.southEast ?? self.image;
-      }
-    }
-
-    if (self.doodads.length > 0) {
-      const DOODAD_CHANCE = 0.1;
-      if (Random().nextDouble() < DOODAD_CHANCE) {
-        var index = Random().nextInt(self.doodads.length);
-        return self.doodads[index];
-      }
-    }
-
-    if (self.variations.length > 0) {
-      var index = Random().nextInt(self.variations.length);
-      return self.variations[index];
-    }
-    
-    return self.image;
-  }
-
   void draw(CanvasRenderingContext2D ctx) {
     ctx.clearRect(0, 0, ctx.canvas.width!, ctx.canvas.height!);
 
-    for (var row = 0; row < ROWS; row ++) {
-      for (var col = 0; col < COLS; col ++) {
-        final tile = getTileAt(typeMap, col, row);
-        ctx.drawImage(tile, col * TILE_WIDTH, row * TILE_HEIGHT);
+    tileMap.draw(ctx);
 
-        ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
-        ctx.strokeRect(col * TILE_WIDTH, row * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+    if (isDrawGrid) {
+      ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
+      for (var row = 0; row < tileMap.rows; row ++) {
+        for (var col = 0; col < tileMap.cols; col ++) {
+          ctx.strokeRect(col * caveTiles.width, row * caveTiles.height, caveTiles.width, caveTiles.height);
+        }
       }
     }
   }
