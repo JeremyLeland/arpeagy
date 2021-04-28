@@ -17,11 +17,6 @@ class Arpeagy {
     canvas.onMouseDown.listen((e) => mouseAction(e));
     canvas.onMouseMove.listen((e) => mouseAction(e));
 
-    ['empty', 'water', 'floor'].forEach((tileType) {
-      final button = querySelector('#${tileType}') as ButtonElement;
-      button.onClick.listen((_) => clickType = tileType);
-    });
-
     final gridCheckbox = querySelector('#grid') as CheckboxInputElement;
     gridCheckbox.onClick.listen((_) {
       isDrawGrid = gridCheckbox.checked!;
@@ -33,9 +28,22 @@ class Arpeagy {
 
       caveTiles = new TileSet(cavesJson);
       caveTiles.ready.then((_) {
+        addUIButtonsForTileSet(caveTiles);
+
         tileMap = new TileMap(caveTiles, MAP_ROWS, MAP_COLS);
         draw(canvas.context2D);
       });
+    });
+  }
+
+  void addUIButtonsForTileSet(TileSet tileSet) {
+    final buttonDiv = querySelector('#buttons')!;
+
+    tileSet.tiles.keys.forEach((tileType) {
+      final button = new ButtonElement();
+      button.text = tileType;
+      button.onClick.listen((_) => clickType = tileType);
+      buttonDiv.children.add(button);
     });
   }
 
