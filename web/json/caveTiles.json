@@ -1,49 +1,45 @@
 {
   "src": "images/cave.png",
+  "credit": "Art by MrBeast. Commissioned by OpenGameArt.org (https://opengameart.org/content/cave-tileset-0)",
   "width": 32,
   "height": 32,
   "tiles" : {
     "empty": {
-      "col": 2, "row": 4,
-      "edges": {
-        "floor": {
-          "SE": {"col" : 6, "row": 5},
-          "S": {"col" : 7, "row": 5},
-          "SW": {"col" : 8, "row": 5},
-          "E": {"col" : 6, "row": 6},
-          "W": {"col" : 8, "row": 6},
-          "NE": {"col" : 6, "row": 7},
-          "N": {"col" : 7, "row": 7},
-          "NW": {"col" : 8, "row": 7},
-          "S+E": {"col" : 6, "row": 8},
-          "S+W": {"col" : 7, "row": 8},
-          "N+E": {"col" : 6, "row": 9},
-          "N+W": {"col" : 7, "row": 9}
-        }
-      }
+      "base": [ { "col": 2, "row": 4 } ],
+      "edges": [
+        { "southEast": "floor", "base": [ { "col": 6, "row": 5 } ] },
+        { "south":     "floor", "base": [ { "col": 7, "row": 5 } ] },
+        { "southWest": "floor", "base": [ { "col": 8, "row": 5 } ] },
+        { "east":      "floor", "base": [ { "col": 6, "row": 6 } ] },
+        { "west":      "floor", "base": [ { "col": 8, "row": 6 } ] },
+        { "northEast": "floor", "base": [ { "col": 6, "row": 7 } ] },
+        { "north":     "floor", "base": [ { "col": 7, "row": 7 } ] },
+        { "northWest": "floor", "base": [ { "col": 8, "row": 7 } ] },
+        { "south": "floor", "east": "floor", "base": [ { "col": 6, "row": 8 } ] },
+        { "south": "floor", "west": "floor", "base": [ { "col": 7, "row": 8 } ] },
+        { "north": "floor", "east": "floor", "base": [ { "col": 6, "row": 9 } ] },
+        { "north": "floor", "west": "floor", "base": [ { "col": 7, "row": 9 } ] }
+      ]
     },
     "water": {
-      "col": 2, "row": 3,
-      "edges": {
-        "floor": {
-          "SE": {"col" : 0, "row": 0},
-          "S": {"col" : 1, "row": 0},
-          "SW": {"col" : 2, "row": 0},
-          "E": {"col" : 0, "row": 1},
-          "W": {"col" : 2, "row": 1},
-          "NE": {"col" : 0, "row": 2},
-          "N": {"col" : 1, "row": 2},
-          "NW": {"col" : 2, "row": 2},
-          "S+E": {"col" : 0, "row": 3},
-          "S+W": {"col" : 1, "row": 3},
-          "N+E": {"col" : 0, "row": 4},
-          "N+W": {"col" : 1, "row": 4}
-        }
-      }
+      "base": [ { "col": 2, "row": 3 } ],
+      "edges": [
+        { "southEast": "floor", "base": [ { "col": 0, "row": 0 } ] },
+        { "south":     "floor", "base": [ { "col": 1, "row": 0 } ] },
+        { "southWest": "floor", "base": [ { "col": 2, "row": 0 } ] },
+        { "east":      "floor", "base": [ { "col": 0, "row": 1 } ] },
+        { "west":      "floor", "base": [ { "col": 2, "row": 1 } ] },
+        { "northEast": "floor", "base": [ { "col": 0, "row": 2 } ] },
+        { "north":     "floor", "base": [ { "col": 1, "row": 2 } ] },
+        { "northWest": "floor", "base": [ { "col": 2, "row": 2 } ] },
+        { "south": "floor", "east": "floor", "base": [ { "col": 0, "row": 3 } ] },
+        { "south": "floor", "west": "floor", "base": [ { "col": 1, "row": 3 } ] },
+        { "north": "floor", "east": "floor", "base": [ { "col": 0, "row": 4 } ] },
+        { "north": "floor", "west": "floor", "base": [ { "col": 1, "row": 4 } ] }
+      ]
     },
     "floor": {
-      "col": 0, "row": 9,
-      "variations": [
+      "base": [
         {"col": 0, "row": 9},
         {"col": 1, "row": 9},
         {"col": 0, "row": 10},
@@ -59,6 +55,9 @@
         {"col": 3, "row": 9},
         {"col": 4, "row": 9}
       ]
+    },
+    "ceiling": {
+      "base": [ {"col": 6, "row": 3 } ]
     }
   }
 }

@@ -6,20 +6,18 @@ import 'tiles.dart';
 class Arpeagy {
   static const int MAP_COLS = 25, MAP_ROWS = 25;
   final canvas = querySelector('#canvas') as CanvasElement;
+  final gridCheckbox = querySelector('#grid') as CheckboxInputElement;
 
   late final TileSet caveTiles;
   late final TileMap tileMap;
 
   String clickType = 'floor';
-  bool isDrawGrid = false;
 
   Arpeagy() {
     canvas.onMouseDown.listen((e) => mouseAction(e));
     canvas.onMouseMove.listen((e) => mouseAction(e));
 
-    final gridCheckbox = querySelector('#grid') as CheckboxInputElement;
     gridCheckbox.onClick.listen((_) {
-      isDrawGrid = gridCheckbox.checked!;
       draw(canvas.context2D);
     });
 
@@ -64,7 +62,7 @@ class Arpeagy {
 
     tileMap.draw(ctx);
 
-    if (isDrawGrid) {
+    if (gridCheckbox.checked!) {
       ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
       for (var row = 0; row < tileMap.rows; row ++) {
         for (var col = 0; col < tileMap.cols; col ++) {

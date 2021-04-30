@@ -1,40 +1,30 @@
 import 'dart:html';
-
 import 'dart:math';
 
-class EdgeInfo {
-  TileInfo? northWest, north, northEast, west, east, southWest, south, southEast;
-  TileInfo? northAndWest, northAndEast, southAndWest, southAndEast;
-
-  EdgeInfo(ImageElement src, Map json, int width, int height) {
-    northWest = new TileInfo(json['NW'], src, width, height);
-    north     = new TileInfo(json['N'],  src, width, height);
-    northEast = new TileInfo(json['NE'], src, width, height);
-    west      = new TileInfo(json['W'],  src, width, height);
-    east      = new TileInfo(json['E'],  src, width, height);
-    southWest = new TileInfo(json['SW'], src, width, height);
-    south     = new TileInfo(json['S'],  src, width, height);
-    southEast = new TileInfo(json['SE'], src, width, height);
-
-    northAndWest = new TileInfo(json['N+W'], src, width, height);
-    northAndEast = new TileInfo(json['N+E'], src, width, height);
-    southAndWest = new TileInfo(json['S+W'], src, width, height);
-    southAndEast = new TileInfo(json['S+E'], src, width, height);
-  }
-}
-
 class TileInfo {
-  late CanvasElement _image;
-  final List<CanvasElement> variations = [], doodads = [];
-  final edges = new Map<String, EdgeInfo>();
+  static const DOODAD_CHANCE = 0.1;
 
-  TileInfo(Map json, ImageElement src, int width, int height) {
-    _image = _extractTile(json, src, width, height);
+  final String? northWest, north, northEast, west, east, southWest, south, southEast;
+  final List<CanvasElement> base = [], doodads = [];
+  final List<TileInfo> edges = [];
 
-    if (json.containsKey('variations')) {
-      (json['variations'] as List).forEach((varJson) {
-        variations.add(_extractTile(varJson, src, width, height));
+  TileInfo(Map json, ImageElement src, int width, int height)
+    : northWest = json['northWest'],
+      north     = json['north'],
+      northEast = json['northEast'],
+      west      = json['west'],
+      east      = json['east'],
+      southWest = json['southWest'],
+      south     = json['south'],
+      southEast = json['southEast']
+  {
+    if (json.containsKey('base')) {
+      (json['base'] as List).forEach((baseJson) {
+        base.add(_extractTile(baseJson, src, width, height));
       });
+    }
+    else {
+      throw new FormatException();
     }
 
     if (json.containsKey('doodads')) {
@@ -44,31 +34,22 @@ class TileInfo {
     }
 
     if (json.containsKey('edges')) {
-      (json['edges'] as Map).forEach((key, value) {
-        edges[key] = new EdgeInfo(src, value, width, height);
+      (json['edges'] as List).forEach((edgeJson) {
+        edges.add(new TileInfo(edgeJson, src, width, height));
       });
     }
   }
 
   CanvasElement get image {
-    if (doodads.length > 0) {
-      const DOODAD_CHANCE = 0.1;
-      if (Random().nextDouble() < DOODAD_CHANCE) {
-        var index = Random().nextInt(doodads.length);
-        return doodads[index];
-      }
+    if (doodads.length > 0 && Random().nextDouble() < DOODAD_CHANCE) {
+      return doodads[Random().nextInt(doodads.length)];
     }
 
-    if (variations.length > 0) {
-      var index = Random().nextInt(variations.length);
-      return variations[index];
-    }
-
-    return _image;
+    return base[Random().nextInt(base.length)];
   }
 
   CanvasElement _extractTile(Map json, ImageElement src, int width, int height) {
-    final col = json['col'], row = json['row'];
+    final int col = json['col'], row = json['row'];
     final w = width, h = height;
     final image = new CanvasElement(width: w, height: h);
     final ctx = image.context2D;
@@ -106,45 +87,52 @@ class TileMap {
   int get cols => typeMap.length;
   int get rows => typeMap[0].length;
 
+  String? getTypeAt(int col, int row) {
+    if (col < 0 || col >= typeMap.length || row < 0 || row >= typeMap[0].length) {
+      return null;
+    }
+
+    return typeMap[col][row];
+  }
+
+  String? _getEdgeAt(int col, int row, String? center) {
+    final type = getTypeAt(col, row);
+    return type == center ? null : type;
+  }
+
   CanvasElement getTileAt(int col, int row) {
-    final hasLeft = col > 0, hasRight = col < typeMap.length - 1;
-    final hasUp = row > 0, hasDown = row < typeMap[0].length - 1;
+    final center = getTypeAt(col, row);
+    final northWest = _getEdgeAt(col - 1, row - 1, center);
+    final north     = _getEdgeAt(col    , row - 1, center);
+    final northEast = _getEdgeAt(col + 1, row - 1, center);
+    final west      = _getEdgeAt(col - 1, row    , center);
+    final east      = _getEdgeAt(col + 1, row    , center);
+    final southWest = _getEdgeAt(col - 1, row + 1, center);
+    final south     = _getEdgeAt(col    , row + 1, center);
+    final southEast = _getEdgeAt(col + 1, row + 1, center);
 
-    final nw = hasUp && hasLeft    ? typeMap[col-1][row-1] : '';
-    final n  = hasUp               ? typeMap[col  ][row-1] : '';
-    final ne = hasUp && hasRight   ? typeMap[col+1][row-1] : '';
-    final w  = hasLeft             ? typeMap[col-1][row  ] : '';
-    final x  = typeMap[col][row];
-    final e  = hasRight            ? typeMap[col+1][row  ] : '';
-    final sw = hasDown && hasLeft  ? typeMap[col-1][row+1] : '';
-    final s  = hasDown             ? typeMap[col  ][row+1] : '';
-    final se = hasDown && hasRight ? typeMap[col+1][row+1] : '';
+    if (!tileSet.tiles.containsKey(center)) {
+      throw FormatException();
+    }
 
-    final self = tileSet.tiles[x]!;
-    final adj = {nw, n, ne, w, e, sw, s, se}.where((t) => t != '' && t != x);
+    final centerTile = tileSet.tiles[center]!;
 
-    if (adj.length == 1) {
-      final other = adj.first;
+    final edges = centerTile.edges.where((edge) =>
+      north == edge.north &&
+      west == edge.west &&
+      east == edge.east &&
+      south == edge.south && 
+      (northWest == edge.northWest || northWest == edge.north || northWest == edge.west) &&
+      (northEast == edge.northEast || northEast == edge.north || northEast == edge.east) &&
+      (southWest == edge.southWest || southWest == edge.south || southWest == edge.west) &&
+      (southEast == edge.southEast || southEast == edge.south || southEast == edge.east)
+    );
 
-      if (self.edges.containsKey(other)) {
-        final edge = self.edges[other]!;
-
-        if (n == other && w == other)   return (edge.northAndWest ?? self).image;
-        if (n == other && e == other)   return (edge.northAndEast ?? self).image;
-        if (s == other && w == other)   return (edge.southAndWest ?? self).image;
-        if (s == other && e == other)   return (edge.southAndEast ?? self).image;
-        if (n  == other)   return (edge.north ?? self).image;
-        if (w  == other)   return (edge.west ?? self).image;
-        if (e  == other)   return (edge.east ?? self).image;
-        if (s  == other)   return (edge.south ?? self).image;
-        if (nw == other)   return (edge.northWest ?? self).image;
-        if (ne == other)   return (edge.northEast ?? self).image;
-        if (sw == other)   return (edge.southWest ?? self).image;
-        if (se == other)   return (edge.southEast ?? self).image;
-      }
+    if (edges.length == 1) {
+      return edges.first.image;
     }
     
-    return self.image;
+    return centerTile.image;
   }
 
   void draw(CanvasRenderingContext2D ctx) {
