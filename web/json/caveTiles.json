@@ -56,8 +56,26 @@
         {"col": 4, "row": 9}
       ]
     },
+    "wall": {
+      "base": [
+        {"col": 13, "row": 1},
+        {"col": 14, "row": 1}
+      ],
+      "edges": [
+        { "north": "ceiling", "west": "floor", "base": [ { "col": 12, "row": 1 } ] },
+        { "north": "ceiling", "east": "floor", "base": [ { "col": 15, "row": 1 } ] },
+        { "south": "floor", "west": "floor", "base": [ { "col": 12, "row": 2 } ] },
+        { "south": "floor", "east": "floor", "base": [ { "col": 15, "row": 2 } ] },
+        { "south": "floor", "base": [ { "col": 13, "row": 2 }, { "col": 14, "row": 2 } ] }
+      ]
+    },
     "ceiling": {
-      "base": [ {"col": 6, "row": 3 } ]
+      "base": [ {"col": 6, "row": 3 } ],
+      "edges": [
+        { "south": "wall", "base": [ { "col": 13, "row": 0 }, { "col": 14, "row": 0 } ] },
+        { "west": "floor", "south": "wall", "base": [ { "col": 12, "row": 0 } ] },
+        { "east": "floor", "south": "wall", "base": [ { "col": 15, "row": 0 } ] }
+      ]
     }
   }
 }
