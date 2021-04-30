@@ -21,7 +21,7 @@ class Arpeagy {
       draw(canvas.context2D);
     });
 
-    HttpRequest.getString('json/caveTiles.json').then((jsonString) {
+    HttpRequest.getString('json/mountainTiles.json').then((jsonString) {
       Map cavesJson = jsonDecode(jsonString);
 
       caveTiles = new TileSet(cavesJson);

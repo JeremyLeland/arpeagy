@@ -1,0 +1,43 @@
+{
+  "src": "images/mountain.png",
+  "credit": "https://opengameart.org/content/2d-lost-garden-zelda-style-tiles-resized-to-32x32-with-additions",
+  "width": 32,
+  "height": 32,
+  "tiles" : {
+    "empty": { "base": [ { "col": 0, "row": 0 } ] },
+    "grass": {
+      "base": [
+        { "col": 14, "row": 4 },
+        { "col": 15, "row": 4 },
+        { "col": 14, "row": 5 },
+        { "col": 15, "row": 5 }
+      ],
+      "edges": [
+        {"southEast": "light-ground", "base": [ { "col": 11, "row": 0 } ] },
+        {"south": "light-ground", "base": [ { "col": 12, "row": 0 } ] },
+        {"southWest": "light-ground", "base": [ { "col": 13, "row": 0 } ] },
+        {"east": "light-ground", "base": [ { "col": 11, "row": 1 } ] },
+        {"west": "light-ground", "base": [ { "col": 13, "row": 1 } ] },
+        {"northEast": "light-ground", "base": [ { "col": 11, "row": 2 } ] },
+        {"north": "light-ground", "base": [ { "col": 12, "row": 2 } ] },
+        {"northWest": "light-ground", "base": [ { "col": 13, "row": 2 } ] },
+        { "south": "light-ground", "east": "light-ground", "base": [ { "col": 14, "row": 6 } ] },
+        { "south": "light-ground", "west": "light-ground", "base": [ { "col": 15, "row": 6 } ] },
+        { "north": "light-ground", "east": "light-ground", "base": [ { "col": 14, "row": 7 } ] },
+        { "north": "light-ground", "west": "light-ground", "base": [ { "col": 15, "row": 7 } ] }
+      ]
+    },
+    "light-ground": {
+      "base": [ { "col": 10, "row": 0 } ]
+    },
+    "dark-ground": {
+      "base": [ { "col": 9, "row": 8 } ]
+    },
+    "light-stone": {
+      "base": [ { "col": 7, "row": 11 } ]
+    },
+    "dark-stone": {
+      "base": [ { "col": 14, "row": 0 } ]
+    }
+  }
+}
