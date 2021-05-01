@@ -5,11 +5,7 @@ class TerrainTile {
   final images = new Map<String, CanvasElement>();
 
   TerrainTile(Map templateJson, ImageElement src, int startCol, int startRow, int width, int height) {
-    print('Creating terrain with template: ${templateJson}');
-
     templateJson.forEach((pattern, tileJson) {
-      print('Pattern ${pattern} has json ${tileJson}');
-
       final col = startCol + tileJson['col'] as int;
       final row = startRow + tileJson['row'] as int;
       images[pattern] = _extractTile(src, col, row, width, height);
@@ -49,16 +45,16 @@ class TileSet {
 }
 
 class TileMap {
-  final int rows, cols;
+  final int cols, rows;
   final TileSet tileSet;
   late List<List<String>> terrainPoints;
 
-  TileMap(this.tileSet, this.rows, this.cols) {
+  TileMap({required this.tileSet, required this.cols, required this.rows}) {
     // the control points to generate the terrain tiles (NW, NE, SW, SE corners of tile)
     // this will be 1 row and 1 col bigger than map, so that every tile has all 4 corners
-    final defaultTile = tileSet.terrainTiles.keys.first;
-    terrainPoints = new List.generate(rows + 1, 
-      (_) => List.filled(cols + 1, defaultTile, growable: false), growable: false);
+    final defaultTile = tileSet.terrainTiles.keys.last;
+    terrainPoints = new List.generate(cols + 1, 
+      (_) => List.filled(rows + 1, defaultTile, growable: false), growable: false);
   }
 
   void _drawTileAt(CanvasRenderingContext2D ctx, int col, int row) {
@@ -75,8 +71,6 @@ class TileMap {
 
     tileSet.terrainTiles.forEach((terrain, tile) {
       final pattern = layers[terrain]?.join('+');
-
-      print('Pattern at ${col},${row} for ${terrain} is ${pattern}');
 
       final image = tile.images[pattern];
       if (image != null) {

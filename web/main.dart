@@ -4,11 +4,10 @@ import 'dart:html';
 import 'tiles.dart';
 
 class Arpeagy {
-  static const int MAP_COLS = 25, MAP_ROWS = 25;
   final canvas = querySelector('#canvas') as CanvasElement;
   final gridCheckbox = querySelector('#grid') as CheckboxInputElement;
 
-  late final TileSet caveTiles;
+  late final TileSet tileSet;
   late final TileMap tileMap;
 
   String clickType = '';
@@ -24,11 +23,13 @@ class Arpeagy {
     HttpRequest.getString('json/lpcTerrain.json').then((jsonString) {
       Map cavesJson = jsonDecode(jsonString);
 
-      caveTiles = new TileSet(cavesJson);
-      caveTiles.ready.then((_) {
-        addUIButtonsForTileSet(caveTiles);
+      tileSet = new TileSet(cavesJson);
+      tileSet.ready.then((_) {
+        addUIButtonsForTileSet(tileSet);
 
-        tileMap = new TileMap(caveTiles, MAP_ROWS, MAP_COLS);
+        final cols = (canvas.width! / tileSet.width).floor();
+        final rows = (canvas.height! / tileSet.height).floor();
+        tileMap = new TileMap(tileSet: tileSet, cols: cols, rows: rows);
         draw(canvas.context2D);
       });
     });
@@ -47,10 +48,8 @@ class Arpeagy {
 
   void mouseAction(MouseEvent event) {
     if (event.buttons == 1) {
-      final col = ((event.offset.x + caveTiles.width/2) / caveTiles.width).floor();
-      final row = ((event.offset.y + caveTiles.height/2) / caveTiles.height).floor();
-
-      print('Setting terrain point at ${col},${row} to ${clickType}');
+      final col = ((event.offset.x + tileSet.width/2) / tileSet.width).floor();
+      final row = ((event.offset.y + tileSet.height/2) / tileSet.height).floor();
 
       if (tileMap.terrainPoints[col][row] != clickType) {
         tileMap.terrainPoints[col][row] = clickType;
@@ -68,7 +67,7 @@ class Arpeagy {
       ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
       for (var row = 0; row < tileMap.rows; row ++) {
         for (var col = 0; col < tileMap.cols; col ++) {
-          ctx.strokeRect(col * caveTiles.width, row * caveTiles.height, caveTiles.width, caveTiles.height);
+          ctx.strokeRect(col * tileSet.width, row * tileSet.height, tileSet.width, tileSet.height);
         }
       }
     }
