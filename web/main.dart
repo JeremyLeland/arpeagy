@@ -11,7 +11,7 @@ class Arpeagy {
   late final TileSet caveTiles;
   late final TileMap tileMap;
 
-  String clickType = 'floor';
+  String clickType = '';
 
   Arpeagy() {
     canvas.onMouseDown.listen((e) => mouseAction(e));
@@ -21,7 +21,7 @@ class Arpeagy {
       draw(canvas.context2D);
     });
 
-    HttpRequest.getString('json/mountainTiles.json').then((jsonString) {
+    HttpRequest.getString('json/lpcTerrain.json').then((jsonString) {
       Map cavesJson = jsonDecode(jsonString);
 
       caveTiles = new TileSet(cavesJson);
@@ -37,21 +37,23 @@ class Arpeagy {
   void addUIButtonsForTileSet(TileSet tileSet) {
     final buttonDiv = querySelector('#buttons')!;
 
-    tileSet.tiles.keys.forEach((tileType) {
+    tileSet.terrainTiles.keys.forEach((name) {
       final button = new ButtonElement();
-      button.text = tileType;
-      button.onClick.listen((_) => clickType = tileType);
+      button.text = name;
+      button.onClick.listen((_) => clickType = name);
       buttonDiv.children.add(button);
     });
   }
 
   void mouseAction(MouseEvent event) {
     if (event.buttons == 1) {
-      final col = (event.offset.x / caveTiles.width).floor();
-      final row = (event.offset.y / caveTiles.height).floor();
+      final col = ((event.offset.x + caveTiles.width/2) / caveTiles.width).floor();
+      final row = ((event.offset.y + caveTiles.height/2) / caveTiles.height).floor();
 
-      if (tileMap.typeMap[col][row] != clickType) {
-        tileMap.typeMap[col][row] = clickType;
+      print('Setting terrain point at ${col},${row} to ${clickType}');
+
+      if (tileMap.terrainPoints[col][row] != clickType) {
+        tileMap.terrainPoints[col][row] = clickType;
         draw(canvas.context2D);
       }
     }

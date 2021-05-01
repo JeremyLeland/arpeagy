@@ -1,145 +1,94 @@
 import 'dart:html';
-import 'dart:math';
 
-class TileInfo {
-  static const DOODAD_CHANCE = 0.1;
 
-  final String? northWest, north, northEast, west, east, southWest, south, southEast;
-  final List<CanvasElement> base = [], doodads = [];
-  final List<TileInfo> edges = [];
+class TerrainTile {
+  final images = new Map<String, CanvasElement>();
 
-  TileInfo(Map json, ImageElement src, int width, int height)
-    : northWest = json['northWest'],
-      north     = json['north'],
-      northEast = json['northEast'],
-      west      = json['west'],
-      east      = json['east'],
-      southWest = json['southWest'],
-      south     = json['south'],
-      southEast = json['southEast']
-  {
-    if (json.containsKey('base')) {
-      (json['base'] as List).forEach((baseJson) {
-        base.add(_extractTile(baseJson, src, width, height));
-      });
-    }
-    else {
-      throw new FormatException();
-    }
+  TerrainTile(Map templateJson, ImageElement src, int startCol, int startRow, int width, int height) {
+    print('Creating terrain with template: ${templateJson}');
 
-    if (json.containsKey('doodads')) {
-      (json['doodads'] as List).forEach((doodadJson) {
-        doodads.add(_extractTile(doodadJson, src, width, height));
-      });
-    }
+    templateJson.forEach((pattern, tileJson) {
+      print('Pattern ${pattern} has json ${tileJson}');
 
-    if (json.containsKey('edges')) {
-      (json['edges'] as List).forEach((edgeJson) {
-        edges.add(new TileInfo(edgeJson, src, width, height));
-      });
-    }
+      final col = startCol + tileJson['col'] as int;
+      final row = startRow + tileJson['row'] as int;
+      images[pattern] = _extractTile(src, col, row, width, height);
+    });
   }
 
-  CanvasElement get image {
-    if (doodads.length > 0 && Random().nextDouble() < DOODAD_CHANCE) {
-      return doodads[Random().nextInt(doodads.length)];
-    }
-
-    return base[Random().nextInt(base.length)];
-  }
-
-  CanvasElement _extractTile(Map json, ImageElement src, int width, int height) {
-    final int col = json['col'], row = json['row'];
+  CanvasElement _extractTile(ImageElement src, int col, int row, int width, int height) {
     final w = width, h = height;
     final image = new CanvasElement(width: w, height: h);
     final ctx = image.context2D;
     ctx.drawImageScaledFromSource(src, col * w, row * h, w, h, 0, 0, w, h);
     return image;
-  }
+  }  
 }
 
 class TileSet {
-  final tiles = new Map<String, TileInfo>();
-  late final width, height;
+  final terrainTiles = new Map<String, TerrainTile>();
+  late final int width, height;
   late Future ready;
 
   TileSet(Map json) {
-    width = json['width'];
-    height = json['height'];
+    width = json['width'] as int;
+    height = json['height'] as int;
 
     final tileSrc = new ImageElement(src: json['src']);
     ready = tileSrc.onLoad.first.then((_) {
-      (json['tiles'] as Map).forEach((key, value) {
-        tiles[key] = new TileInfo(value, tileSrc, width, height);
+      final templateJson = json['template'] as Map;
+
+      (json['terrainTypes'] as List).forEach((terrainJson) {
+        final name = terrainJson['name'] as String;
+        final startCol = terrainJson['col'] as int;
+        final startRow = terrainJson['row'] as int;
+        terrainTiles[name] = new TerrainTile(templateJson, tileSrc, startCol, startRow, width, height);
       });
     });
   }
 }
 
 class TileMap {
-  TileSet tileSet;
-  late List<List<String>> typeMap;
+  final int rows, cols;
+  final TileSet tileSet;
+  late List<List<String>> terrainPoints;
 
-  TileMap(this.tileSet, int rows, int cols) {
-    typeMap = new List.generate(rows, (_) => List.filled(cols, 'empty', growable: false), growable: false);
+  TileMap(this.tileSet, this.rows, this.cols) {
+    // the control points to generate the terrain tiles (NW, NE, SW, SE corners of tile)
+    // this will be 1 row and 1 col bigger than map, so that every tile has all 4 corners
+    final defaultTile = tileSet.terrainTiles.keys.first;
+    terrainPoints = new List.generate(rows + 1, 
+      (_) => List.filled(cols + 1, defaultTile, growable: false), growable: false);
   }
 
-  int get cols => typeMap.length;
-  int get rows => typeMap[0].length;
+  void _drawTileAt(CanvasRenderingContext2D ctx, int col, int row) {
+    final nw = terrainPoints[col    ][row    ];
+    final ne = terrainPoints[col + 1][row    ];
+    final sw = terrainPoints[col    ][row + 1];
+    final se = terrainPoints[col + 1][row + 1];
 
-  String? getTypeAt(int col, int row) {
-    if (col < 0 || col >= typeMap.length || row < 0 || row >= typeMap[0].length) {
-      return null;
-    }
+    final layers = Map<String, List<String>>();
+    layers.putIfAbsent(nw, () => []).add('NW');
+    layers.putIfAbsent(ne, () => []).add('NE');
+    layers.putIfAbsent(sw, () => []).add('SW');
+    layers.putIfAbsent(se, () => []).add('SE');
 
-    return typeMap[col][row];
-  }
+    tileSet.terrainTiles.forEach((terrain, tile) {
+      final pattern = layers[terrain]?.join('+');
 
-  String? _getEdgeAt(int col, int row, String? center) {
-    final type = getTypeAt(col, row);
-    return type == center ? null : type;
-  }
+      print('Pattern at ${col},${row} for ${terrain} is ${pattern}');
 
-  CanvasElement getTileAt(int col, int row) {
-    final center = getTypeAt(col, row);
-    final northWest = _getEdgeAt(col - 1, row - 1, center);
-    final north     = _getEdgeAt(col    , row - 1, center);
-    final northEast = _getEdgeAt(col + 1, row - 1, center);
-    final west      = _getEdgeAt(col - 1, row    , center);
-    final east      = _getEdgeAt(col + 1, row    , center);
-    final southWest = _getEdgeAt(col - 1, row + 1, center);
-    final south     = _getEdgeAt(col    , row + 1, center);
-    final southEast = _getEdgeAt(col + 1, row + 1, center);
-
-    if (!tileSet.tiles.containsKey(center)) {
-      throw FormatException();
-    }
-
-    final centerTile = tileSet.tiles[center]!;
-
-    final edges = centerTile.edges.where((edge) =>
-      north == edge.north &&
-      west == edge.west &&
-      east == edge.east &&
-      south == edge.south && 
-      (northWest == edge.northWest || northWest == edge.north || northWest == edge.west) &&
-      (northEast == edge.northEast || northEast == edge.north || northEast == edge.east) &&
-      (southWest == edge.southWest || southWest == edge.south || southWest == edge.west) &&
-      (southEast == edge.southEast || southEast == edge.south || southEast == edge.east)
-    );
-
-    if (edges.length == 1) {
-      return edges.first.image;
-    }
-    
-    return centerTile.image;
+      final image = tile.images[pattern];
+      if (image != null) {
+        ctx.drawImage(image, col * tileSet.width, row * tileSet.width);
+      }
+    });
   }
 
   void draw(CanvasRenderingContext2D ctx) {
     for (var row = 0; row < rows; row ++) {
       for (var col = 0; col < cols; col ++) {
-        final tile = getTileAt(col, row);
-        ctx.drawImage(tile, col * tileSet.width, row * tileSet.width);
+        _drawTileAt(ctx, col, row);
       }
     }
   }

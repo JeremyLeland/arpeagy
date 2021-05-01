@@ -1,0 +1,34 @@
+{
+  "src": "images/lpc_minimal.png",
+  "width": 32,
+  "height": 32,
+  "terrainTypes": [
+    { "name": "water", "col":  0, "row": 14 },
+    { "name": "mud",   "col": 30, "row":  0 },
+    { "name": "dirt",  "col":  0, "row":  7 },
+    { "name": "grass", "col":  0, "row":  0 }
+  ],
+  "template": {
+    "small":       {"col": 0, "row": 0 },
+    "large":       {"col": 0, "row": 1 },
+    "NW+NE+SW":    {"col": 1, "row": 0 },
+    "NW+NE+SE":    {"col": 2, "row": 0 },
+    "NW+SW+SE":    {"col": 1, "row": 1 },
+    "NE+SW+SE":    {"col": 2, "row": 1 },
+    "SE":          {"col": 0, "row": 2 },
+    "SW+SE":       {"col": 1, "row": 2 },
+    "SW":          {"col": 2, "row": 2 },
+    "NE+SE":       {"col": 0, "row": 3 },
+    "NW+NE+SW+SE": {"col": 1, "row": 3 },
+    "NW+SW":       {"col": 2, "row": 3 },
+    "NE":          {"col": 0, "row": 4 },
+    "NW+NE":       {"col": 1, "row": 4 },
+    "NW":          {"col": 2, "row": 4 },
+    "NE+SW":       {"col": 0, "row": 6 },
+    "NW+SE":       {"col": 1, "row": 6 },
+    "variants1":   {"col": 0, "row": 5 },
+    "variants2":   {"col": 1, "row": 5 },
+    "variants3":   {"col": 2, "row": 5 },
+    "variants4":   {"col": 2, "row": 6 }
+  }
+}
