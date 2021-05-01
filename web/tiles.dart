@@ -1,14 +1,18 @@
 import 'dart:html';
 
+import 'dart:math';
+
+
+final _random = new Random();
 
 class TerrainTile {
-  final images = new Map<String, CanvasElement>();
+  final _images = new Map<String, CanvasElement>();
 
   TerrainTile(Map templateJson, ImageElement src, int startCol, int startRow, int width, int height) {
     templateJson.forEach((pattern, tileJson) {
       final col = startCol + tileJson['col'] as int;
       final row = startRow + tileJson['row'] as int;
-      images[pattern] = _extractTile(src, col, row, width, height);
+      _images[pattern] = _extractTile(src, col, row, width, height);
     });
   }
 
@@ -18,7 +22,15 @@ class TerrainTile {
     final ctx = image.context2D;
     ctx.drawImageScaledFromSource(src, col * w, row * h, w, h, 0, 0, w, h);
     return image;
-  }  
+  }
+
+  CanvasElement? getImage(String? pattern) {
+    if (pattern == 'NW+NE+SW+SE' && _random.nextDouble() < 0.1) {
+      return _images['variants${_random.nextInt(3) + 1}'];
+    }
+
+    return _images[pattern];
+  }
 }
 
 class TileSet {
@@ -71,8 +83,7 @@ class TileMap {
 
     tileSet.terrainTiles.forEach((terrain, tile) {
       final pattern = layers[terrain]?.join('+');
-
-      final image = tile.images[pattern];
+      final image = tile.getImage(pattern);
       if (image != null) {
         ctx.drawImage(image, col * tileSet.width, row * tileSet.width);
       }

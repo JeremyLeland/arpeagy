@@ -4,6 +4,7 @@
   "height": 32,
   "terrainTypes": [
     { "name": "mud",   "col": 30, "row":  0 },
+    { "name": "dirt",  "col":  6, "row":  7 },
     { "name": "path",  "col":  0, "row":  7 },
     { "name": "water", "col":  0, "row": 14 },
     { "name": "lava",  "col": 15, "row": 14 },
@@ -31,7 +32,6 @@
     "NW+SE":       {"col": 1, "row": 6 },
     "variants1":   {"col": 0, "row": 5 },
     "variants2":   {"col": 1, "row": 5 },
-    "variants3":   {"col": 2, "row": 5 },
-    "variants4":   {"col": 2, "row": 6 }
+    "variants3":   {"col": 2, "row": 5 }
   }
 }
