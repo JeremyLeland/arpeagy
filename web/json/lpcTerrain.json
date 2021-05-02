@@ -6,6 +6,8 @@
     { "name": "mud",   "col": 30, "row":  0 },
     { "name": "sand",  "col": 21, "row":  0 },
     { "name": "dirt",  "col":  6, "row":  7 },
+    { "name": "lavarock", "col": 18, "row":  7 },
+    { "name": "stone", "col": 30, "row":  7 },
     { "name": "path",  "col":  0, "row":  7 },
     { "name": "water", "col":  0, "row": 14 },
     { "name": "lava",  "col": 15, "row": 14 },
