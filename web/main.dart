@@ -34,6 +34,9 @@ class Arpeagy {
 
         // TODO: Move/generalize this
         
+        // Fill with grass
+        tileMap.addTerrainRectangle(col: 0, row: 0, width: cols+1, height: rows+1, terrain: 'grass');
+        
         // Add some lakes
         final random = new Random();
         for (var i = 0; i < 10; i ++) {

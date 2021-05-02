@@ -4,13 +4,15 @@
   "height": 32,
   "terrainTypes": [
     { "name": "mud",   "col": 30, "row":  0 },
+    { "name": "sand",  "col": 21, "row":  0 },
     { "name": "dirt",  "col":  6, "row":  7 },
     { "name": "path",  "col":  0, "row":  7 },
     { "name": "water", "col":  0, "row": 14 },
     { "name": "lava",  "col": 15, "row": 14 },
     { "name": "hole",  "col": 18, "row": 14 },
     { "name": "void",  "col": 21, "row": 14 },
-    { "name": "grass", "col":  0, "row":  0 }
+    { "name": "grass", "col":  0, "row":  0 },
+    { "name": "snow",  "col": 24, "row":  0 }
   ],
   "template": {
     "small":       {"col": 0, "row": 0 },
