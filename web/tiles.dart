@@ -59,21 +59,45 @@ class TileSet {
 class TileMap {
   final int cols, rows;
   final TileSet tileSet;
-  late List<List<String>> terrainPoints;
+  late List<List<String>> _terrainPoints;
 
   TileMap({required this.tileSet, required this.cols, required this.rows}) {
     // the control points to generate the terrain tiles (NW, NE, SW, SE corners of tile)
     // this will be 1 row and 1 col bigger than map, so that every tile has all 4 corners
     final defaultTile = tileSet.terrainTiles.keys.last;
-    terrainPoints = new List.generate(cols + 1, 
+    _terrainPoints = new List.generate(cols + 1, 
       (_) => List.filled(rows + 1, defaultTile, growable: false), growable: false);
   }
 
+  String getTerrainAt({required int col, required int row}) {
+    if (0 <= col && col <= cols && 0 <= row && row <= rows) {   // we have 1 more row/col of terrain points
+      return _terrainPoints[col][row];
+    }
+    
+    return '';
+  }
+
+  void setTerrainAt({required int col, required int row, required String terrain}) {
+    if (0 <= col && col <= cols && 0 <= row && row <= rows) {   // we have 1 more row/col of terrain points
+      _terrainPoints[col][row] = terrain;
+    }
+  }
+
+  void addTerrainCircle({required int col, required int row, required int radius, required String terrain}) {
+    for (var r = row - radius; r < row + radius; r ++) {
+      for (var c = col - radius; c < col + radius; c ++) {
+        if (sqrt(pow(col - c, 2) + pow(row - r, 2)) < radius) {
+          setTerrainAt(col: c, row: r, terrain: terrain);
+        }
+      }
+    }
+  }
+
   void _drawTileAt(CanvasRenderingContext2D ctx, int col, int row) {
-    final nw = terrainPoints[col    ][row    ];
-    final ne = terrainPoints[col + 1][row    ];
-    final sw = terrainPoints[col    ][row + 1];
-    final se = terrainPoints[col + 1][row + 1];
+    final nw = _terrainPoints[col    ][row    ];
+    final ne = _terrainPoints[col + 1][row    ];
+    final sw = _terrainPoints[col    ][row + 1];
+    final se = _terrainPoints[col + 1][row + 1];
 
     final layers = Map<String, List<String>>();
     layers.putIfAbsent(nw, () => []).add('NW');
