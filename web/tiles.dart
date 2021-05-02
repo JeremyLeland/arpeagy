@@ -59,18 +59,18 @@ class TileSet {
 class TileMap {
   final int cols, rows;
   final TileSet tileSet;
-  late List<List<Tile>> _terrainPoints;
+  late List<List<Tile>> _terrain;
 
   TileMap({required this.tileSet, required this.cols, required this.rows}) {
     // the control points to generate the terrain tiles (NW, NE, SW, SE corners of tile)
     // this will be 1 row and 1 col bigger than map, so that every tile has all 4 corners
-    _terrainPoints = new List.generate(cols + 1, 
-      (_) => List.filled(rows + 1, tileSet.terrain.values.first, growable: false), growable: false);
+    final defaultVal = tileSet.terrain.values.first;
+    _terrain = List.generate(cols + 1, (_) => List.filled(rows + 1, defaultVal));
   }
 
   Tile getTerrainAt(int col, int row) {
     //if (0 <= col && col <= cols && 0 <= row && row <= rows) {   // we have 1 more row/col of terrain points
-      return _terrainPoints[col][row];
+      return _terrain[col][row];
     //}
     
     //return '';
@@ -78,7 +78,7 @@ class TileMap {
 
   void setTerrainAt(int col, int row, Tile terrain) {
     if (0 <= col && col <= cols && 0 <= row && row <= rows) {   // we have 1 more row/col of terrain points
-      _terrainPoints[col][row] = terrain;
+      _terrain[col][row] = terrain;
     }
   }
 
@@ -121,10 +121,10 @@ class TileMap {
   }
 
   void _drawTileAt(CanvasRenderingContext2D ctx, int col, int row) {
-    final nw = _terrainPoints[col    ][row    ];
-    final ne = _terrainPoints[col + 1][row    ];
-    final sw = _terrainPoints[col    ][row + 1];
-    final se = _terrainPoints[col + 1][row + 1];
+    final nw = _terrain[col    ][row    ];
+    final ne = _terrain[col + 1][row    ];
+    final sw = _terrain[col    ][row + 1];
+    final se = _terrain[col + 1][row + 1];
 
     final layers = Map<Tile, List<String>>();
     layers.putIfAbsent(nw, () => []).add('NW');
