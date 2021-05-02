@@ -45,6 +45,8 @@ class Arpeagy {
             radius: random.nextInt(10), terrain: 'water');
         }
 
+        tileMap.addTerrainLine(startCol: 4, startRow: 4, endCol: 10, endRow: 20, terrain: 'path');
+
         draw(canvas.context2D);
       });
     });

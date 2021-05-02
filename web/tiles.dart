@@ -100,6 +100,26 @@ class TileMap {
     }
   }
 
+  void addTerrainLine({required int startCol, required int startRow, required int endCol, required int endRow, required String terrain}) {
+    num dc = endCol - startCol, dr = endRow - startRow;
+    final dist = sqrt(pow(dc, 2) + pow(dr, 2));
+    dc /= dist;
+    dr /= dist;
+
+    num c = startCol, r = startRow, total = 0;
+
+    while (total < dist) {
+
+      addTerrainRectangle(col: c.floor(), row: r.floor(), width: 2, height: 2, terrain: terrain);
+
+      c += dc;
+      r += dr;
+      total ++;
+    } 
+
+    
+  }
+
   void _drawTileAt(CanvasRenderingContext2D ctx, int col, int row) {
     final nw = _terrainPoints[col    ][row    ];
     final ne = _terrainPoints[col + 1][row    ];
