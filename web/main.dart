@@ -11,7 +11,7 @@ class Arpeagy {
   late final TileSet tileSet;
   late final TileMap tileMap;
 
-  String clickType = '';
+  late Tile clickTile;
 
   Arpeagy() {
     canvas.onMouseDown.listen((e) => mouseAction(e));
@@ -28,6 +28,8 @@ class Arpeagy {
       tileSet.ready.then((_) {
         addUIButtonsForTileSet(tileSet);
 
+        clickTile = tileSet.terrain.values.first;
+
         final cols = (canvas.width! / tileSet.width).floor();
         final rows = (canvas.height! / tileSet.height).floor();
         tileMap = new TileMap(tileSet: tileSet, cols: cols, rows: rows);
@@ -35,17 +37,17 @@ class Arpeagy {
         // TODO: Move/generalize this
         
         // Fill with grass
-        tileMap.addTerrainRectangle(col: 0, row: 0, width: cols+1, height: rows+1, terrain: 'grass');
+        tileMap.addTerrainRectangle(0, 0, cols+1, rows+1, tileSet.terrain['grass']!);
         
         // Add some lakes
         final random = new Random();
         for (var i = 0; i < 10; i ++) {
           tileMap.addTerrainCircle(
-            col: random.nextInt(tileMap.cols), row: random.nextInt(tileMap.rows),
-            radius: random.nextInt(10), terrain: 'water');
+            random.nextInt(tileMap.cols), random.nextInt(tileMap.rows),
+            random.nextInt(10), tileSet.terrain['water']!);
         }
 
-        tileMap.addTerrainLine(startCol: 4, startRow: 4, endCol: 10, endRow: 20, terrain: 'path');
+        tileMap.addTerrainLine(4, 4, 10, 20, tileSet.terrain['path']!);
 
         draw(canvas.context2D);
       });
@@ -55,10 +57,10 @@ class Arpeagy {
   void addUIButtonsForTileSet(TileSet tileSet) {
     final buttonDiv = querySelector('#buttons')!;
 
-    tileSet.terrainTiles.keys.forEach((name) {
+    tileSet.terrain.keys.forEach((name) {
       final button = new ButtonElement();
       button.text = name;
-      button.onClick.listen((_) => clickType = name);
+      button.onClick.listen((_) => clickTile = tileSet.terrain[name]!);
       buttonDiv.children.add(button);
     });
   }
@@ -68,8 +70,8 @@ class Arpeagy {
       final col = ((event.offset.x + tileSet.width/2) / tileSet.width).floor();
       final row = ((event.offset.y + tileSet.height/2) / tileSet.height).floor();
 
-      if (tileMap.getTerrainAt(col: col, row: row) != clickType) {
-        tileMap.setTerrainAt(col: col, row: row, terrain: clickType);
+      if (tileMap.getTerrainAt(col, row) != clickTile) {
+        tileMap.setTerrainAt(col, row, clickTile);
         draw(canvas.context2D);
       }
     }

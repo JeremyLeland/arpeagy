@@ -5,10 +5,10 @@ import 'dart:math';
 
 final _random = new Random();
 
-class TerrainTile {
+class Tile {
   final _images = new Map<String, CanvasElement>();
 
-  TerrainTile(Map templateJson, ImageElement src, int startCol, int startRow, int width, int height) {
+  Tile(Map templateJson, ImageElement src, int startCol, int startRow, int width, int height) {
     templateJson.forEach((pattern, tileJson) {
       final col = startCol + tileJson['col'] as int;
       final row = startRow + tileJson['row'] as int;
@@ -34,7 +34,7 @@ class TerrainTile {
 }
 
 class TileSet {
-  final terrainTiles = new Map<String, TerrainTile>();
+  final terrain = new Map<String, Tile>();
   late final int width, height;
   late Future ready;
 
@@ -50,7 +50,7 @@ class TileSet {
         final name = terrainJson['name'] as String;
         final startCol = terrainJson['col'] as int;
         final startRow = terrainJson['row'] as int;
-        terrainTiles[name] = new TerrainTile(templateJson, tileSrc, startCol, startRow, width, height);
+        terrain[name] = new Tile(templateJson, tileSrc, startCol, startRow, width, height);
       });
     });
   }
@@ -59,48 +59,48 @@ class TileSet {
 class TileMap {
   final int cols, rows;
   final TileSet tileSet;
-  late List<List<String>> _terrainPoints;
+  late List<List<Tile>> _terrainPoints;
 
   TileMap({required this.tileSet, required this.cols, required this.rows}) {
     // the control points to generate the terrain tiles (NW, NE, SW, SE corners of tile)
     // this will be 1 row and 1 col bigger than map, so that every tile has all 4 corners
     _terrainPoints = new List.generate(cols + 1, 
-      (_) => List.filled(rows + 1, '', growable: false), growable: false);
+      (_) => List.filled(rows + 1, tileSet.terrain.values.first, growable: false), growable: false);
   }
 
-  String getTerrainAt({required int col, required int row}) {
-    if (0 <= col && col <= cols && 0 <= row && row <= rows) {   // we have 1 more row/col of terrain points
+  Tile getTerrainAt(int col, int row) {
+    //if (0 <= col && col <= cols && 0 <= row && row <= rows) {   // we have 1 more row/col of terrain points
       return _terrainPoints[col][row];
-    }
+    //}
     
-    return '';
+    //return '';
   }
 
-  void setTerrainAt({required int col, required int row, required String terrain}) {
+  void setTerrainAt(int col, int row, Tile terrain) {
     if (0 <= col && col <= cols && 0 <= row && row <= rows) {   // we have 1 more row/col of terrain points
       _terrainPoints[col][row] = terrain;
     }
   }
 
-  void addTerrainRectangle({required int col, required int row, required int width, required int height, required String terrain}) {
+  void addTerrainRectangle(int col, int row, int width, int height, Tile terrain) {
     for (var r = row; r < row + height; r ++) {
       for (var c = col; c < col + width; c ++) {
-        setTerrainAt(col: c, row: r, terrain: terrain);
+        setTerrainAt(c, r, terrain);
       }
     }
   }
 
-  void addTerrainCircle({required int col, required int row, required int radius, required String terrain}) {
+  void addTerrainCircle(int col, int row, int radius, Tile terrain) {
     for (var r = row - radius; r < row + radius; r ++) {
       for (var c = col - radius; c < col + radius; c ++) {
         if (sqrt(pow(col - c, 2) + pow(row - r, 2)) < radius) {
-          setTerrainAt(col: c, row: r, terrain: terrain);
+          setTerrainAt(c, r, terrain);
         }
       }
     }
   }
 
-  void addTerrainLine({required int startCol, required int startRow, required int endCol, required int endRow, required String terrain}) {
+  void addTerrainLine(int startCol, int startRow, int endCol, int endRow, Tile terrain) {
     num dc = endCol - startCol, dr = endRow - startRow;
     final dist = sqrt(pow(dc, 2) + pow(dr, 2));
     dc /= dist;
@@ -110,7 +110,7 @@ class TileMap {
 
     while (total < dist) {
 
-      addTerrainRectangle(col: c.floor(), row: r.floor(), width: 2, height: 2, terrain: terrain);
+      addTerrainRectangle(c.floor(), r.floor(), 2, 2, terrain);
 
       c += dc;
       r += dr;
@@ -126,14 +126,14 @@ class TileMap {
     final sw = _terrainPoints[col    ][row + 1];
     final se = _terrainPoints[col + 1][row + 1];
 
-    final layers = Map<String, List<String>>();
+    final layers = Map<Tile, List<String>>();
     layers.putIfAbsent(nw, () => []).add('NW');
     layers.putIfAbsent(ne, () => []).add('NE');
     layers.putIfAbsent(sw, () => []).add('SW');
     layers.putIfAbsent(se, () => []).add('SE');
 
-    tileSet.terrainTiles.forEach((terrain, tile) {
-      final pattern = layers[terrain]?.join('+');
+    tileSet.terrain.forEach((_, tile) {
+      final pattern = layers[tile]?.join('+');
       final image = tile.getImage(pattern);
       if (image != null) {
         ctx.drawImage(image, col * tileSet.width, row * tileSet.width);
