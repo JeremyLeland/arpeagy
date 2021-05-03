@@ -41,22 +41,21 @@ class Arpeagy {
          
         
         final heights = noise2(cols + 1, rows + 1,
-          noiseType: NoiseType.Cellular,
+          noiseType: NoiseType.Perlin,
           octaves: 5,
-          frequency: 0.1,
-          cellularReturnType: CellularReturnType.Distance2Add,
+          frequency: 0.03,
           seed: new DateTime.now().millisecondsSinceEpoch);
 
 
         for (var r = 0; r <= rows; r ++) {
           for (var c = 0; c <= cols; c ++) {
             final val = heights[c][r];
-            final shade = heights[c][r] * 255;
+            final shade = (heights[c][r] + 0.5) * 255;
             canvas.context2D..fillStyle = 'rgb(${shade},${shade},${shade})'..fillRect(c, r, 1, 1);
             
             Tile tile = tileSet.terrain['void']!;
-            if (val < -0.4)      tile = tileSet.terrain['water']!;
-            else if (val < -0.2) tile = tileSet.terrain['sand']!;
+            if (val < -0.45)     tile = tileSet.terrain['water']!;
+            else if (val < -0.3) tile = tileSet.terrain['sand']!;
             else if (val < 0.1) tile = tileSet.terrain['dirt']!;
             else if (val < 0.4) tile = tileSet.terrain['grass']!;
             else                tile = tileSet.terrain['snow']!;
@@ -78,7 +77,7 @@ class Arpeagy {
 
         // tileMap.addTerrainLine(4, 4, 10, 20, tileSet.terrain['path']!);
 
-         draw(canvas.context2D);
+        draw(canvas.context2D);
       });
     });
   }
