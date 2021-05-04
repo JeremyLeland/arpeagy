@@ -1,0 +1,13 @@
+{
+  "src": "images/man_white.png",
+  "width": 64,
+  "height": 64,
+  "actions": [
+    { "name": "cast",   "frames":  7 },
+    { "name": "thrust", "frames":  8 },
+    { "name": "walk",   "frames":  9 },
+    { "name": "slash",  "frames":  6 },
+    { "name": "bow",    "frames": 13 },
+    { "name": "hurt",   "frames":  6 }
+  ]
+}
