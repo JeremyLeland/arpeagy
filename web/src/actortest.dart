@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:html';
 
 import 'actor.dart';
+import 'sprite.dart';
 
 class ActorTest {
   final canvas = querySelector('#canvas') as CanvasElement;
@@ -13,8 +14,9 @@ class ActorTest {
     HttpRequest.getString('json/human.json').then((jsonString) {
       Map json = jsonDecode(jsonString);
 
-      actor = new Actor(json);
-      actor.ready.then((_) {
+      final spriteSet = SpriteSet.fromCharacterJson(json);
+      spriteSet.ready.then((_) {
+        actor = new Actor(spriteSet);
         addUIButtonsForActor(actor);
 
         //draw(canvas.context2D);
@@ -26,11 +28,11 @@ class ActorTest {
   void addUIButtonsForActor(Actor actor) {
     final buttonDiv = querySelector('#buttons')!;
 
-    actor.images.keys.forEach((actionName) {
+    actor.spriteSet.sprites.keys.forEach((actionName) {
       final button = new ButtonElement();
       button.text = actionName;
       button.onClick.listen((_) {
-        actor.setAction(actionName);
+        actor.action = actionName;
         //draw(canvas.context2D);
       });
       buttonDiv.children.add(button);

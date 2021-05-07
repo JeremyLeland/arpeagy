@@ -2,12 +2,12 @@
   "src": "images/man_white.png",
   "width": 64,
   "height": 64,
-  "actions": [
-    { "name": "cast",   "frames":  7 },
-    { "name": "thrust", "frames":  8 },
-    { "name": "walk",   "frames":  9 },
-    { "name": "slash",  "frames":  6 },
-    { "name": "bow",    "frames": 13 },
-    { "name": "hurt",   "frames":  6 }
+  "template": [
+    { "name": "cast",   "directions": ["north", "east", "south", "west"], "frames":  7 },
+    { "name": "thrust", "directions": ["north", "east", "south", "west"], "frames":  8 },
+    { "name": "walk",   "directions": ["north", "east", "south", "west"], "frames":  9 },
+    { "name": "slash",  "directions": ["north", "east", "south", "west"], "frames":  6 },
+    { "name": "shoot",  "directions": ["north", "east", "south", "west"], "frames": 13 },
+    { "name": "hurt",   "directions": ["south"],                          "frames":  6 }
   ]
 }
