@@ -2,24 +2,23 @@ import 'dart:convert';
 import 'dart:html';
 
 import 'actor.dart';
+import 'game.dart';
 import 'sprite.dart';
 
-class ActorTest {
-  final canvas = querySelector('#canvas') as CanvasElement;
-  num _lastTime = 0;
-
+class ActorTest extends Game {
   late final Actor actor;
 
-  ActorTest() {
+  ActorTest() : super(querySelector('#canvas') as CanvasElement) {
     HttpRequest.getString('json/human.json').then((jsonString) {
       Map json = jsonDecode(jsonString);
 
       final spriteSet = SpriteSet.fromCharacterJson(json);
       spriteSet.ready.then((_) {
         actor = new Actor(spriteSet);
+        actor.spawn(100, 100);
+
         addUIButtonsForActor(actor);
 
-        //draw(canvas.context2D);
         animate();
       });
     });
@@ -39,24 +38,18 @@ class ActorTest {
     });
   }
 
-  void animate() async {
-    while (true) {
-      final num now = await window.animationFrame;
-
-      update(now - _lastTime);
-
-      _lastTime = now;
-
-      draw(canvas.context2D);
-    }
-  }
-
   void update(num dt) {
+    actor.aimToward(mouse.x, mouse.y);
+
     actor.update(dt);
   }
 
   void draw(CanvasRenderingContext2D ctx) {
-    ctx.clearRect(0, 0, ctx.canvas.width!, ctx.canvas.height!);
+
+    ctx..beginPath()
+       ..moveTo( 90, 90)..lineTo(110, 110)
+       ..moveTo(110, 90)..lineTo( 90, 110)
+       ..strokeStyle = 'red'..stroke();
 
     actor.draw(ctx);
   }

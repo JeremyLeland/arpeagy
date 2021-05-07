@@ -3,29 +3,26 @@ import 'dart:html';
 import 'dart:math';
 
 abstract class Game {
-  late CanvasRenderingContext2D _ctx;
+  CanvasElement canvas;
   num _lastTime = 0;
   bool _running = true;
 
   Keyboard keyboard = new Keyboard();
   Mouse mouse = new Mouse();
 
-  Game() {
-    final canvas = new CanvasElement(width: window.innerWidth, height: window.innerHeight);
-    canvas.style.display = 'block';
-    canvas.onContextMenu.listen((e) => e.preventDefault());   // suppress right click context menu
-    document.body!.children.add(canvas);
-
-    _ctx = canvas.context2D;
-    window.onResize.listen((event) {
-      _ctx.canvas.width =  window.innerWidth;
-      _ctx.canvas.height = window.innerHeight;
-    });
+  Game(this.canvas) {
+    _fixCanvasSize();
+    window.onResize.listen((_) => _fixCanvasSize());
   }
 
-  void setCursor(String cursor) => _ctx.canvas.style.cursor = cursor;
-  int get canvasWidth => _ctx.canvas.width ?? 0;
-  int get canvasHeight => _ctx.canvas.height ?? 0;
+  void _fixCanvasSize() {
+    canvas.width =  canvas.parent!.clientWidth;
+    canvas.height = canvas.parent!.clientHeight;
+  }
+
+  void setCursor(String cursor) => canvas.style.cursor = cursor;
+  int get canvasWidth => canvas.width ?? 0;
+  int get canvasHeight => canvas.height ?? 0;
 
   void animate() async {
     const MAX_DT = 20;
@@ -40,14 +37,9 @@ abstract class Game {
 
       _lastTime = now;
 
-      _ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      draw(_ctx);
+      canvas.context2D.clearRect(0, 0, canvasWidth, canvasHeight);
+      draw(canvas.context2D);
     }
-  }
-
-  void drawOnce() {
-    _ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    draw(_ctx);
   }
 
   void update(num dt);

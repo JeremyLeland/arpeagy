@@ -10,12 +10,15 @@ class Sprite {
 class SpriteSet {
   final sprites = new Map<String, Map<String, Sprite>>();
   late final int width, height;
+  late final int centerX, centerY;
   late Future ready;
 
-  SpriteSet(this.width, this.height);
+  SpriteSet(this.width, this.height, this.centerX, this.centerY);
 
   static SpriteSet fromCharacterJson(Map json) {
-    final spriteSet = new SpriteSet(json['width'] as int, json['height'] as int);
+    final w = json['width'] as int, h = json['height'] as int;
+    final cx = json['centerX'] as int, cy = json['centerY'] as int;
+    final spriteSet = new SpriteSet(w, h, cx, cy);
 
     final src = new ImageElement(src: json['src']);
     spriteSet.ready = src.onLoad.first.then((_) {
