@@ -1,26 +1,24 @@
-import 'dart:convert';
 import 'dart:html';
 
-import 'actor.dart';
-import 'game.dart';
-import 'sprite.dart';
+import '../src/actor.dart';
+import '../src/game.dart';
+import '../src/sprite.dart';
 
 class ActorTest extends Game {
+
   late final Actor actor;
 
   ActorTest() : super(querySelector('#canvas') as CanvasElement) {
-    HttpRequest.getString('json/human.json').then((jsonString) {
-      Map json = jsonDecode(jsonString);
 
-      final spriteSet = SpriteSet.fromCharacterJson(json);
-      spriteSet.ready.then((_) {
-        actor = new Actor(spriteSet);
-        actor.spawn(100, 100);
+    final humanSprites = new ActorSprites('json/human.json');
+    
+    humanSprites.ready.then((humanSprites) {
+      actor = new Actor(humanSprites);
+      actor.spawn(100, 100);
 
-        addUIButtonsForActor(actor);
+      addUIButtonsForActor(actor);
 
-        animate();
-      });
+      animate();
     });
   }
 
@@ -53,4 +51,8 @@ class ActorTest extends Game {
 
     actor.draw(ctx);
   }
+}
+
+void main() {
+  new ActorTest();
 }

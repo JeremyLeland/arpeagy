@@ -10,7 +10,7 @@ class Actor {
 
   String _action = 'walk';
 
-  final SpriteSet spriteSet;
+  final ActorSprites spriteSet;
   
   int frame = 0;
   static const num timeBetweenFrames = 100;
@@ -49,14 +49,14 @@ class Actor {
     if (timeUntilNextFrame < 0) {
       timeUntilNextFrame += timeBetweenFrames;
 
-      if (++frame >= spriteSet.getSprite(action: action, direction: direction).frames.length) {
+      if (++frame >= spriteSet.sprites[action]![direction]!.length) {
         frame = 0;
       }
     }
   }
 
   void draw(CanvasRenderingContext2D ctx) {
-    final sprite = spriteSet.getSprite(action: action, direction: direction);
-    ctx.drawImage(sprite.frames[frame], x - spriteSet.centerX, y - spriteSet.centerY);
+    final sprite = spriteSet.sprites[action]![direction]![frame];
+    ctx.drawImage(sprite, x - spriteSet.centerX, y - spriteSet.centerY);
   }
 }
