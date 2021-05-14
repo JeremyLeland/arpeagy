@@ -27,7 +27,9 @@ class Arpeagy extends Game {
   }
 
   void update(num dt) {
-    actor.aimToward(mouse.x, mouse.y);
+    if (mouse.isPressed(Mouse.LEFT_BUTTON)) {
+      actor.setGoal(mouse.x, mouse.y);
+    }
     actor.update(dt);
   }
 
