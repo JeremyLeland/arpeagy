@@ -1,11 +1,7 @@
 import 'dart:html';
-
 import 'dart:math';
 
 import 'sprite.dart';
-
-
-final _random = new Random();
 
 class TileMap {
   final int cols, rows;
@@ -66,9 +62,7 @@ class TileMap {
       c += dc;
       r += dr;
       total ++;
-    } 
-
-    
+    }
   }
 
   void _drawTileAt(CanvasRenderingContext2D ctx, int col, int row) {
@@ -84,10 +78,18 @@ class TileMap {
     layers.putIfAbsent(se, () => []).add('SE');
 
     tileSet.tiles.forEach((name, tile) {
-      final pattern = layers[name]?.join('+');
+      var pattern = layers[name]?.join('+');
+
+      if (pattern == 'NW+NE+SW+SE') {
+        final random = new Random();
+        if (random.nextDouble() < 0.1) {
+          pattern = 'variant${random.nextInt(3) + 1}';
+        }
+      }
+
       final image = tile[pattern];
       if (image != null) {
-        ctx.drawImage(image, col * tileSet.width, row * tileSet.width);
+        ctx.drawImage(image, col * tileSet.width, row * tileSet.height);
       }
     });
   }
@@ -98,5 +100,11 @@ class TileMap {
         _drawTileAt(ctx, col, row);
       }
     }
+  }
+
+  CanvasElement generateImage() {
+    final image = new CanvasElement(width: cols * tileSet.width, height: rows * tileSet.height);
+    draw(image.context2D);
+    return image;
   }
 }

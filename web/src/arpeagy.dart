@@ -8,6 +8,7 @@ import 'tiles.dart';
 class Arpeagy extends Game {
   late final Actor actor;
   late final TileMap tileMap;
+  late final CanvasElement levelImage;
 
   Arpeagy() : super(querySelector('#canvas') as CanvasElement) {
 
@@ -21,6 +22,10 @@ class Arpeagy extends Game {
       tileMap = new TileMap(tileSet: terrain, cols: 25, rows: 25);
       tileMap.addTerrainRectangle(0, 0, 26, 26, 'grass');
       tileMap.addTerrainCircle(10, 10, 5, 'water');
+      tileMap.addTerrainLine(20, 0, 18, 10, 'path');
+      tileMap.addTerrainLine(18, 10, 17, 20, 'path');
+
+      levelImage = tileMap.generateImage();
 
       animate();
     });
@@ -34,7 +39,7 @@ class Arpeagy extends Game {
   }
 
   void draw(CanvasRenderingContext2D ctx) {
-    tileMap.draw(ctx);
+    ctx.drawImage(levelImage, 0, 0);
     actor.draw(ctx);
   }
 }
