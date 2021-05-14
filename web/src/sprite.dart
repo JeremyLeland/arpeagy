@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:html';
 
+import 'actor.dart';
+
 class ActorSprites {
   late final int width, height;
   late final int centerX, centerY;
-  final sprites = new Map<String, Map<String, Map<String, List<CanvasElement>>>>();
+  final sprites = new Map<String, Map<Action, Map<Direction, List<CanvasElement>>>>();
   late Future ready;
 
   ActorSprites(String pathToJson) {
@@ -29,26 +31,28 @@ class ActorSprites {
         srcImages.forEach((layer, src) { 
           int row = 0;
 
-          final actionDirFrames = new Map<String, Map<String, List<CanvasElement>>>();
+          final actionDirFrames = new Map<Action, Map<Direction, List<CanvasElement>>>();
 
           (json['template'] as List).forEach((actionJson) {
-            final action = actionJson['action'] as String;
+            final actionStr = actionJson['action'] as String;
             final dirs = actionJson['directions'] as List;
             final numFrames = actionJson['frames'] as int;
 
-            final dirFrames = new Map<String, List<CanvasElement>>();
+            final dirFrames = new Map<Direction, List<CanvasElement>>();
 
-            dirs.forEach((dir) {
+            dirs.forEach((dirStr) {
               final List<CanvasElement> frames = [];
 
               for (var frame = 0; frame < numFrames; frame ++) {
                 frames.add(_extractImage(src, frame, row, width, height));
               }
 
+              final dir = Direction.values.firstWhere((e) => e.toString() == 'Direction.${dirStr}');
               dirFrames[dir] = frames;
               row ++;
             });
 
+            final action = Action.values.firstWhere((e) => e.toString() == 'Action.${actionStr}');
             actionDirFrames[action] = dirFrames;
           });
 

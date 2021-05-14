@@ -3,13 +3,19 @@ import 'dart:math';
 
 import 'sprite.dart';
 
+enum Direction { north, east, south, west }
+enum Action { cast, thrust, walk, slash, shoot, hurt }
+
+T enumFromString<T>(List<T> values, String value) {
+  return values.firstWhere((v) => v.toString().split('.')[1] == value);
+}
 
 class Actor {
   num x = 0, y = 0, angle = 0, speed = 0.1;
   num _goalX = 0, _goalY = 0;
 
   final layers = ['body', 'hair', 'feet', 'legs', 'chest'];
-  String _action = 'walk';
+  Action _action = Action.walk;
 
   final ActorSprites spriteSet;
   
@@ -33,17 +39,17 @@ class Actor {
     aimToward(_goalX, _goalY);
   }
 
-  String get direction {
-    if (angle < (-3/4) * pi)  return 'west';
-    if (angle < (-1/4) * pi)  return 'north';
-    if (angle < ( 1/4) * pi)  return 'east';
-    if (angle < ( 3/4) * pi)  return 'south';
+  Direction get direction {
+    if (angle < (-3/4) * pi)  return Direction.west;
+    if (angle < (-1/4) * pi)  return Direction.north;
+    if (angle < ( 1/4) * pi)  return Direction.east;
+    if (angle < ( 3/4) * pi)  return Direction.south;
 
-    return 'west';
+    return Direction.west;
   }
 
-  String get action => _action;
-  void set action(String action) {
+  Action get action => _action;
+  void set action(Action action) {
     _action = action;
     frame = 0;
   }

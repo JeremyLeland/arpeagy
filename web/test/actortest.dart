@@ -29,7 +29,7 @@ class ActorTest extends Game {
       final button = new ButtonElement();
       button.text = actionName;
       button.onClick.listen((_) {
-        actor.action = actionName;
+        //actor.action = actionName;
         //draw(canvas.context2D);
       });
       buttonDiv.children.add(button);
