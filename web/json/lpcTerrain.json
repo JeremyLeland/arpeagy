@@ -23,6 +23,6 @@
     [ "NE+SE",    "NW+NE+SW+SE",  "NW+SW"     ],
     [ "NE",       "NW+NE",        "NW"        ],
     [ "variant1", "variant2",     "variant3"  ],
-    [ "NE+SW",    "SW+SE"                     ]
+    [ "NE+SW",    "NW+SE"                     ]
   ]
 }
