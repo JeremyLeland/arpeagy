@@ -4,7 +4,7 @@ import 'dart:html';
 class ActorSprites {
   late final int width, height;
   late final int centerX, centerY;
-  final sprites = new Map<String, Map<String, List<CanvasElement>>>();
+  final sprites = new Map<String, Map<String, Map<String, List<CanvasElement>>>>();
   late Future ready;
 
   ActorSprites(String pathToJson) {
@@ -16,36 +16,51 @@ class ActorSprites {
       centerX = json['centerX'] as int;
       centerY = json['centerY'] as int;
 
-      final src = new ImageElement(src: json['src']);
-      return src.onLoad.first.then((_) {
-        int row = 0;
+      final srcImages = new Map<String, ImageElement>();
+      final List<Future> srcReady = [];
 
-        (json['template'] as List).forEach((actionJson) {
-          final name = actionJson['name'] as String;
-          final dirs = actionJson['directions'] as List;
-          final numFrames = actionJson['frames'] as int;
+      (json['src'] as Map).forEach((key, path) {
+        final src = new ImageElement(src: path);
+        srcReady.add(src.onLoad.first);
+        srcImages[key] = src;
+      });
 
-          final dirFrames = new Map<String, List<CanvasElement>>();
+      return Future.wait(srcReady).then((_) {
+        srcImages.forEach((layer, src) { 
+          int row = 0;
 
-          dirs.forEach((dir) {
-            final List<CanvasElement> frames = [];
+          final actionDirFrames = new Map<String, Map<String, List<CanvasElement>>>();
 
-            for (var frame = 0; frame < numFrames; frame ++) {
-              frames.add(_extractImage(src, frame, row, width, height));
-            }
+          (json['template'] as List).forEach((actionJson) {
+            final action = actionJson['action'] as String;
+            final dirs = actionJson['directions'] as List;
+            final numFrames = actionJson['frames'] as int;
 
-            dirFrames[dir] = frames;
-            row ++;
+            final dirFrames = new Map<String, List<CanvasElement>>();
+
+            dirs.forEach((dir) {
+              final List<CanvasElement> frames = [];
+
+              for (var frame = 0; frame < numFrames; frame ++) {
+                frames.add(_extractImage(src, frame, row, width, height));
+              }
+
+              dirFrames[dir] = frames;
+              row ++;
+            });
+
+            actionDirFrames[action] = dirFrames;
           });
 
-          sprites[name] = dirFrames;
+          sprites[layer] = actionDirFrames;
         });
       });
     });
   }
 
-  CanvasElement getImage({required String action, required String direction, required int frame}) {
-    final act = sprites[action] ?? sprites.values.first;
+  CanvasElement getImage({required String layer, required String action, required String direction, required int frame}) {
+    final lay = sprites[layer] ?? sprites.values.first;
+    final act = lay[action] ?? lay.values.first;
     final dir = act[direction] ?? act.values.first;
     return dir[frame];
   }
