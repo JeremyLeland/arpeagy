@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:html';
 
-import 'actor.dart';
-
 class ActorSprites {
   late final int width, height;
   late final int centerX, centerY;
-  final sprites = new Map<String, Map<Action, Map<Direction, List<CanvasElement>>>>();
+
+  late final _numFramesForAction = new Map<String, int>();
+
+  final _sprites = new Map<String, Map<String, Map<String, List<CanvasElement>>>>();
   late Future ready;
 
   ActorSprites(String pathToJson) {
@@ -31,39 +32,40 @@ class ActorSprites {
         srcImages.forEach((layer, src) { 
           int row = 0;
 
-          final actionDirFrames = new Map<Action, Map<Direction, List<CanvasElement>>>();
+          final actionDirFrames = new Map<String, Map<String, List<CanvasElement>>>();
 
           (json['template'] as List).forEach((actionJson) {
-            final actionStr = actionJson['action'] as String;
+            final action = actionJson['action'] as String;
             final dirs = actionJson['directions'] as List;
             final numFrames = actionJson['frames'] as int;
 
-            final dirFrames = new Map<Direction, List<CanvasElement>>();
+            _numFramesForAction[action] = numFrames;
 
-            dirs.forEach((dirStr) {
+            final dirFrames = new Map<String, List<CanvasElement>>();
+            dirs.forEach((dir) {
               final List<CanvasElement> frames = [];
 
               for (var frame = 0; frame < numFrames; frame ++) {
                 frames.add(_extractImage(src, frame, row, width, height));
               }
 
-              final dir = Direction.values.firstWhere((e) => e.toString() == 'Direction.${dirStr}');
               dirFrames[dir] = frames;
               row ++;
             });
 
-            final action = Action.values.firstWhere((e) => e.toString() == 'Action.${actionStr}');
             actionDirFrames[action] = dirFrames;
           });
 
-          sprites[layer] = actionDirFrames;
+          _sprites[layer] = actionDirFrames;
         });
       });
     });
   }
 
+  int numFramesForAction(String action) => _numFramesForAction[action]!;
+
   CanvasElement getImage({required String layer, required String action, required String direction, required int frame}) {
-    final lay = sprites[layer] ?? sprites.values.first;
+    final lay = _sprites[layer] ?? _sprites.values.first;
     final act = lay[action] ?? lay.values.first;
     final dir = act[direction] ?? act.values.first;
     return dir[frame];

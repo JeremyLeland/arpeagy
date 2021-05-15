@@ -3,9 +3,6 @@ import 'dart:math';
 
 import 'sprite.dart';
 
-enum Direction { north, east, south, west }
-enum Action { cast, thrust, walk, slash, shoot, hurt }
-
 T enumFromString<T>(List<T> values, String value) {
   return values.firstWhere((v) => v.toString().split('.')[1] == value);
 }
@@ -14,8 +11,8 @@ class Actor {
   num x = 0, y = 0, angle = 0, speed = 0.1;
   num _goalX = 0, _goalY = 0;
 
-  final layers = ['body', 'hair', 'feet', 'legs', 'chest'];
-  Action _action = Action.walk;
+  final layers = ['body'];
+  String _action = 'walk';
 
   final ActorSprites spriteSet;
   
@@ -39,17 +36,17 @@ class Actor {
     aimToward(_goalX, _goalY);
   }
 
-  Direction get direction {
-    if (angle < (-3/4) * pi)  return Direction.west;
-    if (angle < (-1/4) * pi)  return Direction.north;
-    if (angle < ( 1/4) * pi)  return Direction.east;
-    if (angle < ( 3/4) * pi)  return Direction.south;
+  String get direction {
+    if (angle < (-3/4) * pi)  return 'west';
+    if (angle < (-1/4) * pi)  return 'north';
+    if (angle < ( 1/4) * pi)  return 'east';
+    if (angle < ( 3/4) * pi)  return 'south';
 
-    return Direction.west;
+    return 'west';
   }
 
-  Action get action => _action;
-  void set action(Action action) {
+  String get action => _action;
+  void set action(String action) {
     _action = action;
     frame = 0;
   }
@@ -64,7 +61,7 @@ class Actor {
     if (timeUntilNextFrame < 0) {
       timeUntilNextFrame += timeBetweenFrames;
 
-      if (++frame >= spriteSet.sprites['body']![action]![direction]!.length) {
+      if (++frame >= spriteSet.numFramesForAction(action)) {
         frame = 1;  // frame 0 is idle
       }
     }
@@ -85,7 +82,7 @@ class Actor {
 
   void draw(CanvasRenderingContext2D ctx) {
     layers.forEach((layer) {
-      final sprite = spriteSet.sprites[layer]![action]![direction]![frame];
+      final sprite = spriteSet.getImage(layer: layer, action: action, direction: direction, frame: frame);
       ctx.drawImage(sprite, x - spriteSet.centerX, y - spriteSet.centerY);
     });
   }

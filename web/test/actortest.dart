@@ -25,15 +25,15 @@ class ActorTest extends Game {
   void addUIButtonsForActor(Actor actor) {
     final buttonDiv = querySelector('#buttons')!;
 
-    actor.spriteSet.sprites.keys.forEach((actionName) {
-      final button = new ButtonElement();
-      button.text = actionName;
-      button.onClick.listen((_) {
-        //actor.action = actionName;
-        //draw(canvas.context2D);
-      });
-      buttonDiv.children.add(button);
-    });
+    // actor.spriteSet.sprites.keys.forEach((actionName) {
+    //   final button = new ButtonElement();
+    //   button.text = actionName;
+    //   button.onClick.listen((_) {
+    //     //actor.action = actionName;
+    //     //draw(canvas.context2D);
+    //   });
+    //   buttonDiv.children.add(button);
+    // });
   }
 
   void update(num dt) {

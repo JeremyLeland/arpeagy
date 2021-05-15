@@ -1,0 +1,14 @@
+{
+  "src": {
+    "body": "images/spider01.png"
+  },
+  "width": 64,
+  "height": 64,
+  "centerX": 31,
+  "centerY": 45,
+  "template": [
+    { "action": "bite",   "directions": ["north", "west", "south", "east"], "frames":  4 },
+    { "action": "walk",   "directions": ["north", "west", "south", "east"], "frames":  7 },
+    { "action": "hurt",   "directions": ["south"],                          "frames":  4 }
+  ]
+}
