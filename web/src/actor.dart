@@ -3,12 +3,8 @@ import 'dart:math';
 
 import 'sprite.dart';
 
-T enumFromString<T>(List<T> values, String value) {
-  return values.firstWhere((v) => v.toString().split('.')[1] == value);
-}
-
 class Actor {
-  num x = 0, y = 0, angle = 0, speed = 0.1;
+  num x = 0, y = 0, angle = 0, speed = 0;
   num _goalX = 0, _goalY = 0;
 
   final layers = ['body'];
@@ -20,7 +16,7 @@ class Actor {
   static const num timeBetweenFrames = 100;
   num timeUntilNextFrame = timeBetweenFrames;
 
-  Actor(this.spriteSet);
+  Actor({required this.speed, required this.spriteSet});
 
   void spawn(num x, num y) {
     this.x = _goalX = x;

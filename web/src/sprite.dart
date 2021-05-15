@@ -46,7 +46,7 @@ class ActorSprites {
               final List<CanvasElement> frames = [];
 
               for (var frame = 0; frame < numFrames; frame ++) {
-                frames.add(_extractImage(src, frame, row, width, height));
+                frames.add(Sprite.extractImage(src, frame, row, width, height));
               }
 
               dirFrames[dir] = frames;
@@ -72,58 +72,14 @@ class ActorSprites {
   }
 }
 
-class TerrainTileset {
-  late final int width, height;
-  final tiles = new Map<String, Map<String, CanvasElement>>();
-  late Future ready;
 
-  TerrainTileset(String pathToJson) {
-    ready = HttpRequest.getString(pathToJson).then((jsonString) {
-      Map json = jsonDecode(jsonString);
 
-      width = json['width'] as int;
-      height = json['height'] as int;
-
-      final tileSrc = new ImageElement(src: json['src']);
-      return tileSrc.onLoad.first.then((_) {
-        final templateJson = json['template'] as List;
-
-        (json['terrainTypes'] as List).forEach((terrainJson) {
-          final name = terrainJson['name'] as String;
-          final startCol = terrainJson['col'] as int;
-          final startRow = terrainJson['row'] as int;
-
-          int row = startRow;
-          final dirs = Map<String, CanvasElement>();
-
-          templateJson.forEach((dirRow) {
-            int col = startCol;
-            
-            (dirRow as List).forEach((dir) {
-              dirs[dir] = _extractImage(tileSrc, col, row, width, height);
-              col ++;
-            });
-
-            row ++;
-          });
-
-          tiles[name] = dirs;
-        });
-      });
-    });
+class Sprite {
+  static CanvasElement extractImage(ImageElement src, int col, int row, int width, int height) {
+    final w = width, h = height;
+    final image = new CanvasElement(width: w, height: h);
+    final ctx = image.context2D;
+    ctx.drawImageScaledFromSource(src, col * w, row * h, w, h, 0, 0, w, h);
+    return image;
   }
-
-  CanvasElement getImage({required String terrain, required String orientation}) {
-    final ter = tiles[terrain] ?? tiles.values.first;
-    final or = ter[orientation] ?? ter.values.first;
-    return or;
-  }
-}
-
-CanvasElement _extractImage(ImageElement src, int col, int row, int width, int height) {
-  final w = width, h = height;
-  final image = new CanvasElement(width: w, height: h);
-  final ctx = image.context2D;
-  ctx.drawImageScaledFromSource(src, col * w, row * h, w, h, 0, 0, w, h);
-  return image;
 }

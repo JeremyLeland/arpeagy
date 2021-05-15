@@ -1,19 +1,18 @@
-import 'dart:convert';
 import 'dart:html';
 
 import 'package:fast_noise/fast_noise.dart';
 
-import '../src/sprite.dart';
+import '../src/terrain.dart';
 import '../src/tiles.dart';
 
 class TileTest {
   final canvas = querySelector('#canvas') as CanvasElement;
   final gridCheckbox = querySelector('#grid') as CheckboxInputElement;
 
-  late final TerrainTileset tileSet;
+  late final TerrainInfo terrainInfo;
   late final TileMap tileMap;
 
-  late String clickTile;
+  late Terrain clickTile;
 
   TileTest() {
     canvas.onMouseDown.listen((e) => mouseAction(e));
@@ -23,15 +22,15 @@ class TileTest {
       draw(canvas.context2D);
     });
 
-    tileSet = new TerrainTileset('json/lpcTerrain.json');
-    tileSet.ready.then((_) {
-      addUIButtonsForTileSet(tileSet);
+    terrainInfo = new TerrainInfo('json/lpcTerrain.json');
+    terrainInfo.ready.then((_) {
+      addUIButtonsForTileSet(terrainInfo);
 
-      clickTile = tileSet.tiles.keys.first;
+      clickTile = terrainInfo.terrainTypes.values.first;
 
-      final cols = (canvas.width! / tileSet.width).floor();
-      final rows = (canvas.height! / tileSet.height).floor();
-      tileMap = new TileMap(tileSet: tileSet, cols: cols, rows: rows);
+      final cols = (canvas.width! / terrainInfo.width).floor();
+      final rows = (canvas.height! / terrainInfo.height).floor();
+      tileMap = new TileMap(terrainInfo: terrainInfo, cols: cols, rows: rows);
 
       // TODO: Move/generalize this
       // Inspired by: https://www.redblobgames.com/maps/terrain-from-noise/
@@ -56,13 +55,13 @@ class TileTest {
           //final shade = (height[c][r] + 0.5) * 255;
           //canvas.context2D..fillStyle = 'rgb(${shade},${shade},${shade})'..fillRect(c, r, 1, 1);
           
-          String tile = 'void';
+          Terrain terrain = terrainInfo.terrainTypes['void']!;
 
           if (h < -0.3) {
-            tile = m < 0 ? 'hole' : 'water';
+            terrain = terrainInfo.terrainTypes[m < 0 ? 'hole' : 'water']!;
           }
           else {
-            tile = m < 0 ? 'dirt' : 'grass';
+            terrain = terrainInfo.terrainTypes[m < 0 ? 'dirt' : 'grass']!;
           }
 
           //if (val < -0.35)     tile = tileSet.terrain['water']!;
@@ -71,7 +70,7 @@ class TileTest {
           //else /*if (val < 0.5)*/ tile = tileSet.terrain['grass']!;
           //else                tile = tileSet.terrain['snow']!;
 
-          tileMap.setTerrainAt(c, r, tile);
+          tileMap.setTerrainAt(c, r, terrain);
         }
       }
               
@@ -92,21 +91,21 @@ class TileTest {
     });
   }
 
-  void addUIButtonsForTileSet(TerrainTileset tileSet) {
+  void addUIButtonsForTileSet(TerrainInfo tileSet) {
     final buttonDiv = querySelector('#buttons')!;
 
-    tileSet.tiles.keys.forEach((name) {
+    tileSet.terrainTypes.keys.forEach((name) {
       final button = new ButtonElement();
       button.text = name;
-      button.onClick.listen((_) => clickTile = name);
+      button.onClick.listen((_) => clickTile = tileSet.terrainTypes[name]!);
       buttonDiv.children.add(button);
     });
   }
 
   void mouseAction(MouseEvent event) {
     if (event.buttons == 1) {
-      final col = ((event.offset.x + tileSet.width/2) / tileSet.width).floor();
-      final row = ((event.offset.y + tileSet.height/2) / tileSet.height).floor();
+      final col = ((event.offset.x + terrainInfo.width/2) / terrainInfo.width).floor();
+      final row = ((event.offset.y + terrainInfo.height/2) / terrainInfo.height).floor();
 
       if (tileMap.getTerrainAt(col, row) != clickTile) {
         tileMap.setTerrainAt(col, row, clickTile);
@@ -124,7 +123,7 @@ class TileTest {
       ctx.strokeStyle = 'rgba(100, 100, 100, 0.5)';
       for (var row = 0; row < tileMap.rows; row ++) {
         for (var col = 0; col < tileMap.cols; col ++) {
-          ctx.strokeRect(col * tileSet.width, row * tileSet.height, tileSet.width, tileSet.height);
+          ctx.strokeRect(col * terrainInfo.width, row * terrainInfo.height, terrainInfo.width, terrainInfo.height);
         }
       }
     }

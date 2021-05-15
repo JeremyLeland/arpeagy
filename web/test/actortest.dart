@@ -13,7 +13,7 @@ class ActorTest extends Game {
     final humanSprites = new ActorSprites('json/human.json');
     
     humanSprites.ready.then((humanSprites) {
-      actor = new Actor(humanSprites);
+      actor = new Actor(speed: 0.1, spriteSet: humanSprites);
       actor.spawn(100, 100);
 
       addUIButtonsForActor(actor);
